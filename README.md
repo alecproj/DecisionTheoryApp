@@ -1,1 +1,59 @@
 # DecisionTheoryApp
+
+## Архитектура проекта
+
+```
+DecisionTheoryApp/
+  app/                      # Flask backend: API + бизнес-логика + алгоритмы
+    __init__.py             # Создание Flask-приложения, регистрация blueprints, инициализация Mongo
+
+    api/                    # HTTP API (JSON), с которым работает фронтенд
+      algorithms.py         # список доступных алгоритмов
+      runs.py               # запуск алгоритма с входными данными
+      reports.py            # получение отчётов по запуску
+
+    services/               # Слой бизнес-логики (не HTTP и не алгоритмы)
+      run_service.py        # Логика запуска: валидация → выполнение → сохранение run и report
+
+    algorithms/             # Реализации алгоритмов теории принятия решений
+      registry.py           # Реестр алгоритмов (что доступно и как к ним обратиться)
+
+      example/              # Пример одного алгоритма (шаблон для новых)
+        schema.py           # Описание входных данных алгоритма (поля, типы, валидация)
+        algo.py             # Реализация алгоритма; пишет отчёт через reporter
+
+    reporting/              # Генерация и форматирование отчётов
+      reporter.py           # Reporter: собирает отчёт (Markdown) единым образом
+
+    db/                     # Работа с базой данных
+      mongo.py              # Подключение к MongoDB и получение коллекций
+
+  frontend/                 # Статичный фронтенд (локально и для GitHub Pages)
+    src/                    # Исходники фронта
+      index.html            # Страница выбора алгоритма
+      input.html            # Страница ввода входных данных
+      report.html           # Страница просмотра отчёта
+      app.js                # Логика фронта: API-запросы или работа с моками
+      style.css             # Стили интерфейса
+
+    mocks/                  # Мок-данные для демо (GitHub Pages, без backend)
+      algorithms.json       # Мок списка алгоритмов
+      run_created.json      # Мок ответа запуска алгоритма
+      report.json           # Мок отчёта
+
+    build/                  # Собранная версия фронта (публикуется на Pages)
+
+  docs/                     # Документация проекта (как запускать, как добавлять алгоритмы)
+
+  tests/                    # Автотесты
+    test_algorithms.py      # Тесты алгоритмов (input → отчёт)
+    test_routes.py          # Тесты API роутов Flask
+
+  docker/                   # Контейнеризация и локальный запуск
+    docker-compose.yml      # Поднимает backend + MongoDB
+    Dockerfile              # Сборка Docker-образа backend
+
+  .github/workflows/        # CI/CD
+    ci.yml                  # Проверки: тесты, линтеры (на PR и main)
+    pages.yml               # Публикация фронта (frontend/build) на GitHub Pages
+```
