@@ -1,0 +1,118 @@
+/* ====== Базовые настройки ====== */
+:root {
+  --bg: #0f172a;
+  --card: #1e293b;
+  --accent: #3b82f6;
+  --accent-hover: #2563eb;
+  --text: #f1f5f9;
+  --muted: #94a3b8;
+  --border: #334155;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+body {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 60px 20px;
+}
+
+/* ====== Заголовок ====== */
+h1 {
+  font-size: 2.2rem;
+  margin-bottom: 15px;
+  letter-spacing: 1px;
+  text-align: center;
+  background: linear-gradient(90deg, #3b82f6, #06b6d4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ====== Режим ====== */
+.muted {
+  color: var(--muted);
+  margin-bottom: 30px;
+  font-size: 0.95rem;
+}
+
+.muted b {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* ====== Контейнер списка ====== */
+#algorithms {
+  list-style: none;
+  width: 100%;
+  max-width: 500px;
+  background: var(--card);
+  border-radius: 14px;
+  padding: 20px;
+  border: 1px solid var(--border);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+  transition: 0.3s ease;
+}
+
+/* ====== Элементы списка ====== */
+#algorithms li {
+  padding: 14px 16px;
+  margin-bottom: 12px;
+  background: #0f172a;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  font-size: 0.95rem;
+}
+
+#algorithms li:last-child {
+  margin-bottom: 0;
+}
+
+#algorithms li:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 15px rgba(59, 130, 246, 0.4);
+}
+
+/* ====== Анимация появления ====== */
+#algorithms li {
+  opacity: 0;
+  animation: fadeIn 0.4s ease forwards;
+}
+
+#algorithms li:nth-child(1) { animation-delay: 0.05s; }
+#algorithms li:nth-child(2) { animation-delay: 0.1s; }
+#algorithms li:nth-child(3) { animation-delay: 0.15s; }
+#algorithms li:nth-child(4) { animation-delay: 0.2s; }
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
+}
+
+/* ====== Адаптивность ====== */
+@media (max-width: 600px) {
+  h1 {
+    font-size: 1.6rem;
+  }
+
+  #algorithms {
+    padding: 15px;
+  }
+
+  #algorithms li {
+    font-size: 0.9rem;
+  }
+}
