@@ -58,7 +58,7 @@ DecisionTheoryApp/
     pages.yml               # Публикация фронта (frontend/build) на GitHub Pages
 ```
 
-## Запуск
+## Запуск backend
 
 0. Установить docker, docker-compose.
 
@@ -92,6 +92,30 @@ curl -X POST http://localhost:8000/api/runs \
 
 ```sh
 curl http://localhost:8000/api/reports/<RUN_ID>
+```
+
+## Запуск frontend
+
+1. Собери build папку вручную:
+
+
+```sh
+rm -rf frontend/build
+mkdir -p frontend/build/mocks
+cp -r frontend/src/* frontend/build/
+cp -r frontend/mocks/* frontend/build/mocks/
+```
+
+2. Запусти сервер:
+
+```sh
+python -m http.server 5173 --directory frontend/build
+```
+
+3. Открывай:
+
+```sh
+http://localhost:5173/
 ```
 
 ## Запуск тестов
