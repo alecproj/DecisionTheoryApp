@@ -57,3 +57,61 @@ DecisionTheoryApp/
     ci.yml                  # Проверки: тесты, линтеры (на PR и main)
     pages.yml               # Публикация фронта (frontend/build) на GitHub Pages
 ```
+
+## Запуск
+
+0. Установить docker, docker-compose.
+
+1. Из корня проекта:
+
+```sh
+docker compose -f docker/docker-compose.yml up --build
+```
+
+2. Проверить health:
+
+```sh
+curl http://localhost:8000/health
+```
+
+3. Список алгоритмов:
+
+```sh
+curl http://localhost:8000/api/algorithms
+```
+
+4. Запуск example:
+
+```sh
+curl -X POST http://localhost:8000/api/runs \
+  -H "Content-Type: application/json" \
+  -d '{"algorithm_id":"example","input":{"a":2,"b":3}}'
+```
+
+5. Получить отчёт (подставь run_id):
+
+```sh
+curl http://localhost:8000/api/reports/<RUN_ID>
+```
+
+## Запуск тестов
+
+1. Поднять только Mongo:
+
+```sh
+docker compose -f docker/docker-compose.yml up -d mongo
+```
+
+
+2. Установить dev зависимости:
+
+```sh
+pip install -e ".[dev]"
+```
+
+3. Запустить тесты:
+
+```sh
+pytest
+```
+
