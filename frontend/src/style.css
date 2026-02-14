@@ -1,0 +1,4 @@
+body { font-family: system-ui, sans-serif; max-width: 800px; margin: 24px auto; padding: 0 16px; }
+button { padding: 8px 12px; margin: 6px 0; cursor: pointer; }
+pre { background: #f6f6f6; padding: 12px; border-radius: 8px; overflow: auto; }
+.muted { color: #666; }

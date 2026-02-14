@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Decision Theory App — Algorithms</title>
+  <link rel="stylesheet" href="./style.css" />
+  <script>
+    // Для Pages ставим "mock". Локально можно поменять на "real".
+    window.APP_MODE = "mock";
+    window.API_BASE = "";
+  </script>
+</head>
+<body>
+  <h1>Выбор алгоритма</h1>
+  <p class="muted">Режим: <b id="mode"></b></p>
+
+  <ul id="algorithms">
+    <li>Загрузка...</li>
+  </ul>
+
+  <script>
+    document.getElementById("mode").textContent = window.APP_MODE;
+  </script>
+  <script src="./app.js"></script>
+</body>
+</html>
