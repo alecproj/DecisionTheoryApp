@@ -36,6 +36,7 @@ body {
   padding: 60px 20px;
   position: relative;
   overflow-x: hidden;
+  overflow-y: hidden;
   background: linear-gradient(135deg, var(--bg1), var(--bg2), var(--bg3));
 }
 
@@ -188,3 +189,4 @@ h1 {
     font-size: 0.95rem;
   }
 }
+
