@@ -1,14 +1,25 @@
-/* ====== Базовые настройки ====== */
+/* ===============================
+   🎨 Новая цветовая схема
+   Emerald / Teal / Slate
+================================ */
 :root {
-  --bg: #0f172a;
-  --card: #1e293b;
-  --accent: #3b82f6;
-  --accent-hover: #2563eb;
-  --text: #f1f5f9;
+  --bg1: #0f172a;   /* глубокий slate */
+  --bg2: #111827;   /* почти чёрный */
+  --bg3: #1e293b;
+
+  --card-bg: rgba(15, 23, 42, 0.75);
+  --border: rgba(148, 163, 184, 0.2);
+
+  --text: #f8fafc;
   --muted: #94a3b8;
-  --border: #334155;
+
+  --accent: #10b981;        /* изумруд */
+  --accent-hover: #059669;
 }
 
+/* ===============================
+   🌍 База
+================================ */
 * {
   margin: 0;
   padding: 0;
@@ -18,29 +29,65 @@
 
 body {
   min-height: 100vh;
-  background: linear-gradient(135deg, #0f172a, #1e293b);
   color: var(--text);
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 60px 20px;
+  position: relative;
+  overflow-x: hidden;
+  background: linear-gradient(135deg, var(--bg1), var(--bg2), var(--bg3));
 }
 
-/* ====== Заголовок ====== */
+/* ===============================
+   🌌 Мягкий световой фон
+================================ */
+body::before,
+body::after {
+  content: "";
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.25;
+  z-index: 0;
+}
+
+body::before {
+  background: #27cde3;
+  top: -150px;
+  left: -150px;
+}
+
+body::after {
+  background: #27cde3;
+  bottom: -150px;
+  right: -150px;
+}
+
+body > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ===============================
+   🏷 Заголовок
+================================ */
 h1 {
-  font-size: 2.2rem;
+  font-size: 2.3rem;
   margin-bottom: 15px;
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
   text-align: center;
-  background: linear-gradient(90deg, #3b82f6, #06b6d4);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  font-weight: 600;
 }
 
-/* ====== Режим ====== */
+/* ===============================
+   ℹ Режим
+================================ */
 .muted {
   color: var(--muted);
-  margin-bottom: 30px;
+  margin-bottom: 35px;
   font-size: 0.95rem;
 }
 
@@ -49,45 +96,67 @@ h1 {
   font-weight: 600;
 }
 
-/* ====== Контейнер списка ====== */
+/* ===============================
+   📦 Контейнер списка
+================================ */
 #algorithms {
   list-style: none;
   width: 100%;
-  max-width: 500px;
-  background: var(--card);
-  border-radius: 14px;
-  padding: 20px;
+  max-width: 520px;
+  padding: 28px;
+  border-radius: 18px;
+  background: var(--card-bg);
+  backdrop-filter: blur(18px);
   border: 1px solid var(--border);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
-  transition: 0.3s ease;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
 }
 
-/* ====== Элементы списка ====== */
+/* ===============================
+   📄 Элементы списка
+================================ */
 #algorithms li {
-  padding: 14px 16px;
-  margin-bottom: 12px;
-  background: #0f172a;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.25s ease;
-  font-size: 0.95rem;
+  margin-bottom: 16px;
 }
 
 #algorithms li:last-child {
   margin-bottom: 0;
 }
 
-#algorithms li:hover {
+/* ===============================
+   🔘 Кнопки
+================================ */
+#algorithms button {
+  width: 100%;
+  padding: 14px 18px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(30, 41, 59, 0.6);
+  color: var(--text);
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+/* Hover */
+#algorithms button:hover {
   background: var(--accent);
   border-color: var(--accent);
   transform: translateY(-3px);
-  box-shadow: 0 6px 15px rgba(59, 130, 246, 0.4);
+  box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
 }
 
-/* ====== Анимация появления ====== */
+/* Active */
+#algorithms button:active {
+  transform: translateY(-1px) scale(0.98);
+}
+
+/* ===============================
+   ✨ Анимация
+================================ */
 #algorithms li {
   opacity: 0;
+  transform: translateY(8px);
   animation: fadeIn 0.4s ease forwards;
 }
 
@@ -99,20 +168,23 @@ h1 {
 @keyframes fadeIn {
   to {
     opacity: 1;
+    transform: translateY(0);
   }
 }
 
-/* ====== Адаптивность ====== */
+/* ===============================
+   📱 Адаптивность
+================================ */
 @media (max-width: 600px) {
   h1 {
-    font-size: 1.6rem;
+    font-size: 1.8rem;
   }
 
   #algorithms {
-    padding: 15px;
+    padding: 20px;
   }
 
-  #algorithms li {
-    font-size: 0.9rem;
+  #algorithms button {
+    font-size: 0.95rem;
   }
 }
