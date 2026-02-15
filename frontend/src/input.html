@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>Decision Theory App — Input</title>
-  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./css/input.css" />
   <script>
     window.APP_MODE = "mock";
     window.API_BASE = "";
@@ -14,8 +14,8 @@
   <p>Алгоритм: <b id="algorithm-id"></b></p>
 
   <form id="input-form">
-    <label>a <input id="a" type="number" value="2" step="1" required /></label><br/>
-    <label>b <input id="b" type="number" value="3" step="1" required /></label><br/>
+    <label>a <input id="a" name="param1" type="number" value="2" step="1" required /></label><br/>
+    <label>b <input id="b" name="param2" type="number" value="3" step="1" required /></label><br/>
     <button type="submit">Запустить</button>
   </form>
 
@@ -23,6 +23,6 @@
 
   <p><a href="./index.html">← назад</a></p>
 
-  <script src="./app.js"></script>
+  <script src="./js/input.js"></script>
 </body>
 </html>
