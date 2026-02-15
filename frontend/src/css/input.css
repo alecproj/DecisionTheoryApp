@@ -1,0 +1,214 @@
+/* ===============================
+   🎨 Та же цветовая схема
+================================ */
+:root {
+  --bg1: #0f172a;
+  --bg2: #111827;
+  --bg3: #1e293b;
+
+  --card-bg: rgba(15, 23, 42, 0.75);
+  --border: rgba(148, 163, 184, 0.2);
+
+  --text: #f8fafc;
+  --muted: #94a3b8;
+
+  --accent: #27cde3;       /* твой бирюзовый */
+  --accent-hover: #1bb4c7;
+
+  --error: #ef4444;
+  --success: #10b981;
+}
+
+/* ===============================
+   🌍 База
+================================ */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+body {
+  min-height: 100vh;
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 60px 20px;
+  position: relative;
+  overflow-x: hidden;
+  overflow-y: hidden;
+  background: linear-gradient(135deg, var(--bg1), var(--bg2), var(--bg3));
+}
+
+/* ===============================
+   🌌 Фон
+================================ */
+body::before,
+body::after {
+  content: "";
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.25;
+  z-index: 0;
+}
+
+body::before {
+  background: var(--accent);
+  top: -150px;
+  left: -150px;
+}
+
+body::after {
+  background: var(--accent);
+  bottom: -150px;
+  right: -150px;
+}
+
+body > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ===============================
+   🏷 Заголовок
+================================ */
+h1 {
+  font-size: 2.2rem;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+p {
+  margin-bottom: 25px;
+  color: var(--muted);
+}
+
+b {
+  color: var(--accent);
+}
+
+/* ===============================
+   📦 Форма (карточка)
+================================ */
+#input-form {
+  width: 100%;
+  max-width: 420px;
+  padding: 28px;
+  border-radius: 18px;
+  background: var(--card-bg);
+  backdrop-filter: blur(18px);
+  border: 1px solid var(--border);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ===============================
+   🏷 Лейблы
+================================ */
+label {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.9rem;
+  color: var(--muted);
+  gap: 6px;
+}
+
+/* ===============================
+   🔢 Input
+================================ */
+input[type="number"] {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: rgba(30, 41, 59, 0.6);
+  color: var(--text);
+  font-size: 1rem;
+  transition: all 0.2s ease;
+}
+
+input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(39, 205, 227, 0.3);
+}
+
+/* ===============================
+   🔘 Кнопка
+================================ */
+button {
+  margin-top: 10px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(30, 41, 59, 0.6);
+  color: var(--text);
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+button:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(39, 205, 227, 0.4);
+}
+
+button:active {
+  transform: translateY(-1px) scale(0.98);
+}
+
+/* ===============================
+   📩 Сообщения
+================================ */
+#message {
+  margin: 8	px 0 0 0;
+  font-size: 0.95rem;
+  min-height: 22px;
+}
+
+/* Ошибка */
+#message.error {
+  color: var(--error);
+  font-weight: 500;
+}
+
+/* Успех */
+#message.success {
+  color: var(--success);
+  font-weight: 500;
+}
+
+/* ===============================
+   🔙 Ссылка назад
+================================ */
+a {
+  color: var(--accent);
+  text-decoration: none;
+  transition: 0.2s;
+}
+
+a:hover {
+  color: #ffffff;
+  text-decoration: underline;
+}
+
+/* ===============================
+   📱 Адаптивность
+================================ */
+@media (max-width: 600px) {
+  h1 {
+    font-size: 1.7rem;
+  }
+
+  #input-form {
+    padding: 20px;
+  }
+}
