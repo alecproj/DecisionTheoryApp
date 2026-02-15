@@ -1,5 +1,8 @@
 {
   "algorithms": [
-    { "id": "example", "name": "Example (a+b)" }
+    { "id": "1", "name": "Метод анализа иерархий" },
+    { "id": "2", "name": "TestMethod1" },
+    { "id": "3", "name": "TestMethod2" },
+    { "id": "4", "name": "TestMethod3" }
   ]
 }
