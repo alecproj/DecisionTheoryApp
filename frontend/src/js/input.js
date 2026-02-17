@@ -11,12 +11,6 @@ async function getJSON(url) {
   return await r.json();
 }
 
-// Источники данных
-async function fetchAlgorithms() {
-  if (MODE === "mock") return await getJSON("./mocks/algorithms.json");
-  return await getJSON(`${API_BASE}/api/algorithms`);
-}
-
 async function createRun(algorithm_id, input) {
   if (MODE === "mock") return await getJSON("./mocks/run_created.json");
 
@@ -31,39 +25,6 @@ async function createRun(algorithm_id, input) {
     throw new Error(body.error || `HTTP ${r.status}`);
   }
   return await r.json();
-}
-
-async function fetchReport(run_id) {
-  if (MODE === "mock") return await getJSON("./mocks/report.json");
-  return await getJSON(`${API_BASE}/api/reports/${run_id}`);
-}
-
-// -------- Pages --------
-
-// index.html: показываем список алгоритмов и переход на input.html
-async function initIndex() {
-  const listEl = document.getElementById("algorithms");
-  if (!listEl) return;
-
-  try {
-    const data = await fetchAlgorithms();
-    const algorithms = data.algorithms || [];
-
-    listEl.innerHTML = "";
-    for (const a of algorithms) {
-      const li = document.createElement("li");
-      const btn = document.createElement("button");
-      btn.textContent = `${a.name} (${a.id})`;
-      btn.onclick = () => {
-        localStorage.setItem("algorithm_id", a.id);
-        window.location.href = "./input.html";
-      };
-      li.appendChild(btn);
-      listEl.appendChild(li);
-    }
-  } catch (e) {
-    listEl.innerHTML = `<li>Ошибка: ${e.message}</li>`;
-  }
 }
 
 // input.html: отправляем input и переходим на report.html
@@ -93,27 +54,5 @@ async function initInput() {
   });
 }
 
-// report.html: показываем markdown как текст (без markdown-рендера для простоты)
-async function initReport() {
-  const out = document.getElementById("report");
-  if (!out) return;
-
-  const runId = localStorage.getItem("run_id");
-  if (!runId) {
-    out.textContent = "Нет run_id. Сначала запустите алгоритм.";
-    return;
-  }
-
-  out.textContent = "Загружаю отчёт...";
-  try {
-    const rep = await fetchReport(runId);
-    out.textContent = rep.markdown || "(пусто)";
-  } catch (e) {
-    out.textContent = `Ошибка: ${e.message}`;
-  }
-}
-
 // Авто-инициализация по наличию элементов на странице
-initIndex();
 initInput();
-initReport();
