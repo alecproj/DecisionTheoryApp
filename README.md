@@ -41,6 +41,7 @@ DecisionTheoryApp/
       index.html            # Страница выбора алгоритма
       input.html            # Страница ввода входных данных
       report.html           # Страница просмотра отчёта
+      config.js             # Конфигурация режима mock для статической сборки frontend
 
     mocks/                  # Мок-данные для демо (GitHub Pages, без backend)
       algorithms.json       # Мок списка алгоритмов
@@ -64,6 +65,8 @@ DecisionTheoryApp/
     pages.yml               # Публикация фронта (frontend/build) на GitHub Pages
 ```
 
+---
+
 ## Запуск backend
 
 0. Установить docker, docker-compose.
@@ -74,19 +77,27 @@ DecisionTheoryApp/
 docker compose -f docker/docker-compose.yml up --build
 ```
 
-2. Проверить health:
+2. Открыть:
+
+```sh
+http://localhost:8000/
+```
+
+### Проверка API
+
+1. Проверить health:
 
 ```sh
 curl http://localhost:8000/health
 ```
 
-3. Список алгоритмов:
+2. Список алгоритмов:
 
 ```sh
 curl http://localhost:8000/api/algorithms
 ```
 
-4. Запуск example:
+3. Запуск example:
 
 ```sh
 curl -X POST http://localhost:8000/api/runs \
@@ -94,15 +105,19 @@ curl -X POST http://localhost:8000/api/runs \
   -d '{"algorithm_id":"example","input":{"a":2,"b":3}}'
 ```
 
-5. Получить отчёт (подставь run_id):
+4. Получить отчёт (подставь run_id):
 
 ```sh
 curl http://localhost:8000/api/reports/<RUN_ID>
 ```
 
+---
+
 ## Запуск frontend
 
-1. Собери build папку вручную:
+### Вручную
+
+1. Собери build папку:
 
 
 ```sh
@@ -124,6 +139,28 @@ python -m http.server 5173 --directory frontend/build
 http://localhost:5173/
 ```
 
+### Через Docker
+
+1. Локально замени переменную окружения в docker-compose.yml:
+
+```sh
+FRONTEND_MODE: "mock"
+```
+
+2. Из корня проекта:
+
+```sh
+docker compose -f docker/docker-compose.yml up --build
+```
+
+3. Открывай:
+
+```sh
+http://localhost:8000/
+```
+
+---
+
 ## Запуск тестов
 
 1. Поднять только Mongo:
@@ -131,7 +168,6 @@ http://localhost:5173/
 ```sh
 docker compose -f docker/docker-compose.yml up -d mongo
 ```
-
 
 2. Установить dev зависимости:
 
