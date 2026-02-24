@@ -9,16 +9,18 @@ services:
     volumes:
       - mongo_data:/data/db
 
-  backend:
+  app:
     build:
       context: ..
       dockerfile: docker/Dockerfile
-    container_name: dta_backend
+    container_name: dta_app
     ports:
       - "8000:8000"
     environment:
       MONGO_URL: "mongodb://mongo:27017"
       MONGO_DB: "decision_theory"
+      FRONTEND_MODE: "real"
+      API_BASE: ""
     depends_on:
       - mongo
 
