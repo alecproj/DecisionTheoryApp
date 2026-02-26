@@ -624,3 +624,4 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+start-frontend.ps1
