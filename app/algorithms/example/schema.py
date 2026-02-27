@@ -6,24 +6,36 @@ from io import StringIO
 
 @dataclass(frozen=True)
 class AHPInput:
-    n: int                          # количество критериев = количество альтернатив
-    criteria_names: List[str]       # названия критериев, например ["Цена", "Качество", "Скорость"]
-    pairwise: List[List[float]]     # матрица парных сравнений критериев (n × n)
-    alt_names: List[str]            # названия альтернатив, например ["Ноутбук A", "Ноутбук B"]
-    scores: List[List[float]]       # матрица оценок: [критерий][альтернатива]
+    n: int
+    criteria_names: List[str]
+    pairwise: List[List[float]]
+    alt_names: List[str]
+    scores: List[List[float]]       # [критерий][альтернатива]
+
+
+def _is_number(s: str) -> bool:
+    """Проверяет, можно ли строку интерпретировать как число (с запятой или точкой)."""
+    if not s or not s.strip():
+        return False
+    s = s.strip().replace(',', '.')
+    try:
+        float(s)
+        return True
+    except ValueError:
+        return False
+
+
+def _parse_number(s: str) -> float:
+    """Преобразует строку в число, заменяя запятую на точку."""
+    if not s.strip():
+        return 0.0
+    try:
+        return float(s.replace(',', '.'))
+    except ValueError:
+        return 0.0
 
 
 def validate_input(data: dict) -> AHPInput:
-    """
-    Ожидаемый формат входа (пример):
-    {
-        "csv": "строка с содержимым csv-файла",
-        # опционально можно добавить позже:
-        # "n": 5,
-        # "criteria": ["К1", "К2", ...],
-        # но пока полагаемся только на csv
-    }
-    """
     if "csv" not in data:
         raise ValueError("Обязательное поле: csv (содержимое CSV-файла)")
 
@@ -31,124 +43,208 @@ def validate_input(data: dict) -> AHPInput:
     if not csv_text:
         raise ValueError("CSV пустой")
 
-    # Читаем CSV
     f = StringIO(csv_text)
-    reader = csv.reader(f)
-    rows = [row for row in reader if any(cell.strip() for cell in row)]
+    reader = csv.reader(f, delimiter=';')
+    rows = []
+    for r in reader:
+        # очищаем ячейки от мусорных формул, но оставляем пустые строки как есть
+        cleaned = [cell.strip().replace('#ДЕЛ/0!', '').replace('#DIV/0!', '') for cell in r]
+        rows.append(cleaned)
 
-    if len(rows) < 4:
-        raise ValueError("CSV слишком короткий для метода AHP")
+    if len(rows) < 5:
+        raise ValueError("CSV слишком короткий")
 
-    # ───────────────────────────────────────
-    # 1. Определяем размер матрицы (n)
-    # ───────────────────────────────────────
-    # Предполагаем, что первая строка с числами/пустыми — это начало матрицы критериев
-    first_data_row = None
-    for row in rows:
-        numeric_count = sum(1 for cell in row[1:] if cell.strip() and cell.replace(".", "").replace("-", "").isdigit())
-        if numeric_count >= 2:  # хотя бы пара чисел → вероятно матрица
-            first_data_row = row
+    # ------------------------------------------------------------------
+    # 1. Поиск матрицы парных сравнений
+    # ------------------------------------------------------------------
+    pairwise_start = None
+    name_col = None          # индекс колонки, где стоит имя критерия
+    n = None
+
+    for i, row in enumerate(rows):
+        # ищем строку, где есть нечисловая ячейка, а справа от неё несколько чисел
+        for j, cell in enumerate(row):
+            if not cell or _is_number(cell):
+                continue
+            # нашли нечисловую ячейку (потенциальное имя)
+            # проверим, что справа есть хотя бы два числа
+            numbers_right = 0
+            for k in range(j+1, len(row)):
+                if _is_number(row[k]):
+                    numbers_right += 1
+                else:
+                    break
+            if numbers_right >= 3:   # достаточно, чтобы считать началом матрицы
+                # проверим также, что в следующих строках в этой же колонке есть непустые значения
+                if i+1 < len(rows) and len(rows[i+1]) > j and rows[i+1][j] and not _is_number(rows[i+1][j]):
+                    pairwise_start = i
+                    name_col = j
+                    # определим n как максимальное количество чисел справа от имени в этой и следующих строках
+                    max_n = 0
+                    for offset in range(20):  # ограничим, чтобы не уйти далеко
+                        r_idx = i + offset
+                        if r_idx >= len(rows):
+                            break
+                        r = rows[r_idx]
+                        if len(r) <= j or not r[j] or _is_number(r[j]):
+                            break
+                        # считаем числа подряд после name_col
+                        num_count = 0
+                        for col in range(j+1, len(r)):
+                            if _is_number(r[col]):
+                                num_count += 1
+                            else:
+                                break
+                        if num_count > max_n:
+                            max_n = num_count
+                    if max_n >= 2:
+                        n = max_n
+                        break
+        if pairwise_start is not None:
             break
 
-    if first_data_row is None:
-        raise ValueError("Не удалось найти матрицу парных сравнений в CSV")
+    if pairwise_start is None or n is None:
+        raise ValueError(
+            "Не удалось найти матрицу парных сравнений.\n"
+            "Убедитесь, что в CSV есть блок с именами критериев и числами справа от них."
+        )
 
-    n = len(first_data_row) - 1  # минус первый столбец (метки строк)
-    if n < 2:
-        raise ValueError("Матрица должна содержать минимум 2 критерия")
-    if n > 19:
-        raise ValueError("Максимально поддерживается 19 критериев / альтернатив")
-
-    # ───────────────────────────────────────
-    # 2. Читаем названия критериев и матрицу парных сравнений
-    # ───────────────────────────────────────
+    # ------------------------------------------------------------------
+    # 2. Сбор матрицы парных сравнений и имён критериев
+    # ------------------------------------------------------------------
     criteria_names = []
     pairwise = [[0.0] * n for _ in range(n)]
 
-    crit_row_idx = 0
-    for i, row in enumerate(rows):
-        if len(row) < n + 1:
-            continue
-        # предполагаем, что строка начинается с названия критерия
-        crit_name = row[0].strip()
-        if not crit_name:
-            crit_name = f"К{crit_row_idx + 1}"
-        criteria_names.append(crit_name)
-
-        for j in range(n):
-            cell = row[j + 1].strip()
-            if cell == '' or cell == '#DIV/0!':
-                val = 0.0
-            else:
-                try:
-                    val = float(cell)
-                except ValueError:
-                    raise ValueError(f"Невозможно преобразовать в число значение '{cell}' в строке {i+1}, столбец {j+2}")
-            pairwise[crit_row_idx][j] = val
-
-        crit_row_idx += 1
-        if crit_row_idx == n:
+    row_idx = pairwise_start
+    crit_count = 0
+    while row_idx < len(rows) and crit_count < n:
+        row = rows[row_idx]
+        if len(row) <= name_col or not row[name_col] or _is_number(row[name_col]):
             break
 
-    if len(criteria_names) != n:
-        raise ValueError(f"Ожидалось {n} критериев, найдено {len(criteria_names)}")
+        name = row[name_col].strip()
+        criteria_names.append(name)
 
-    # Заполняем диагональ и реципрокные значения
+        # собираем числа из колонок name_col+1 ... name_col+n
+        for j in range(n):
+            col = name_col + 1 + j
+            if col < len(row) and _is_number(row[col]):
+                pairwise[crit_count][j] = _parse_number(row[col])
+            else:
+                pairwise[crit_count][j] = 0.0
+
+        crit_count += 1
+        row_idx += 1
+
+    if crit_count != n:
+        raise ValueError(f"Нашли только {crit_count} строк в матрице критериев, ожидалось {n}")
+
+    # заполняем диагональ единицами и восстанавливаем обратные значения
     for i in range(n):
-        pairwise[i][i] = 1.0
-        for j in range(i + 1, n):
+        if pairwise[i][i] == 0.0:
+            pairwise[i][i] = 1.0
+        for j in range(i+1, n):
             a = pairwise[i][j]
             b = pairwise[j][i]
-            if a != 0 and b == 0:
-                pairwise[j][i] = 1.0 / a
-            elif b != 0 and a == 0:
-                pairwise[i][j] = 1.0 / b
-            # если оба ненулевые → оставляем как есть (можно потом проверять согласованность)
+            if a > 0 and b == 0:
+                pairwise[j][i] = 1.0 / a if a != 0 else 0.0
+            elif b > 0 and a == 0:
+                pairwise[i][j] = 1.0 / b if b != 0 else 0.0
 
-    # ───────────────────────────────────────
-    # 3. Читаем матрицу оценок альтернатив
-    # ───────────────────────────────────────
+    # ------------------------------------------------------------------
+    # 3. Поиск блока с альтернативами
+    # ------------------------------------------------------------------
+    # Ищем строку, в которой много нечисловых ячеек (названия альтернатив)
+    alt_header_row = None
+    alt_start_col = None
+    for i in range(pairwise_start + n, len(rows)):
+        row = rows[i]
+        if len(row) < 2:
+            continue
+        non_numeric_indices = [j for j, cell in enumerate(row) if cell and not _is_number(cell)]
+        if len(non_numeric_indices) < n // 2 + 1:
+            continue
+        # Find the longest consecutive group
+        if non_numeric_indices:
+            non_numeric_indices.sort()
+            max_group = []
+            current_group = [non_numeric_indices[0]]
+            for k in range(1, len(non_numeric_indices)):
+                if non_numeric_indices[k] == non_numeric_indices[k-1] + 1:
+                    current_group.append(non_numeric_indices[k])
+                else:
+                    if len(current_group) > len(max_group):
+                        max_group = current_group
+                    current_group = [non_numeric_indices[k]]
+            if len(current_group) > len(max_group):
+                max_group = current_group
+            if len(max_group) >= n:
+                alt_start_col = max_group[0]
+                alt_header_row = i
+                break
+
+    if alt_header_row is None:
+        raise ValueError("Не удалось найти строку с названиями альтернатив")
+
+    # извлекаем имена альтернатив из строки alt_header_row, начиная с alt_start_col (только n штук)
     alt_names = []
-    scores = [[0.0] * n for _ in range(n)]  # [критерий][альтернатива]
+    row = rows[alt_header_row]
+    count = 0
+    for j in range(alt_start_col, len(row)):
+        cell = row[j]
+        if cell and not _is_number(cell) and count < n:
+            alt_names.append(cell.strip())
+            count += 1
+        if count >= n:
+            break
+    if len(alt_names) < n:
+        alt_names.extend([f"Альтернатива {i+1}" for i in range(len(alt_names), n)])
 
-    alt_start_found = False
-    alt_row_idx = 0
+    # ------------------------------------------------------------------
+    # 4. Сбор оценок альтернатив (матрица scores)
+    # ------------------------------------------------------------------
+    scores = [[0.0] * n for _ in range(n)]
 
-    for row in rows:
-        if not alt_start_found:
-            # ищем начало блока альтернатив (по наличию слова "альт" или по количеству чисел)
-            numeric_count = sum(1 for cell in row[1:] if cell.strip() and cell.replace(".", "").replace("-", "").isdigit())
-            if numeric_count >= n - 2 or "альт" in str(row).lower() or "a" in str(row).lower():
-                alt_start_found = True
-            else:
-                continue
+    # после заголовка альтернатив идут строки с данными для каждого критерия
+    data_row_start = alt_header_row + 1
+    name_col_scores = alt_start_col - 1  # имя критерия обычно перед альтернативами (в файле = 2)
+    val_start_scores = alt_start_col    # значения начинаются с этой колонки (в файле = 3)
 
-        if len(row) < n + 1:
+    criteria_found = 0
+    for i in range(data_row_start, len(rows)):
+        if criteria_found >= n:
+            break
+        row = rows[i]
+        if len(row) < name_col_scores + 1:
             continue
 
-        alt_name = row[0].strip()
-        if not alt_name:
-            alt_name = f"А{alt_row_idx + 1}"
-        alt_names.append(alt_name)
+        criterion_name = row[name_col_scores].strip()
+        if not criterion_name or _is_number(criterion_name):
+            continue
 
-        for j in range(n):
-            cell = row[j + 1].strip()
-            if cell == '' or cell == '#DIV/0!':
-                val = 0.0
+        # Используем последовательный индекс (criteria_found), а не index, чтобы избежать проблем с дубликатами
+        crit_idx = criteria_found
+        # Опционально: проверка на совпадение имени (если порядок нарушен — ошибка)
+        if criterion_name != criteria_names[crit_idx]:
+            raise ValueError(f"Несоответствие имени критерия в scores: ожидалось '{criteria_names[crit_idx]}', найдено '{criterion_name}' на строке {i}")
+
+        # собираем значения для альтернатив из колонок val_start_scores ... val_start_scores + n - 1
+        # (игнорируем колонку "Сортировать..." дальше)
+        for alt_idx in range(n):
+            col = val_start_scores + alt_idx
+            if col < len(row) and _is_number(row[col]):
+                scores[crit_idx][alt_idx] = _parse_number(row[col])
             else:
-                try:
-                    val = float(cell)
-                except ValueError:
-                    raise ValueError(f"Невозможно преобразовать в число значение '{cell}' в оценках альтернативы {alt_name}")
-            scores[j][alt_row_idx] = val  # важно: scores[критерий][альтернатива]
+                scores[crit_idx][alt_idx] = 0.0
 
-        alt_row_idx += 1
-        if alt_row_idx == n:
-            break
+        criteria_found += 1
 
-    if len(alt_names) != n:
-        raise ValueError(f"Ожидалось {n} альтернатив, найдено {len(alt_names)}")
+    if criteria_found < n:
+        raise ValueError(f"Нашли только {criteria_found} строк в матрице scores, ожидалось {n}")
 
+    # ------------------------------------------------------------------
+    # 5. Финальная проверка и возврат
+    # ------------------------------------------------------------------
     return AHPInput(
         n=n,
         criteria_names=criteria_names,
@@ -156,13 +252,3 @@ def validate_input(data: dict) -> AHPInput:
         alt_names=alt_names,
         scores=scores,
     )
-
-"""@dataclass(frozen=True)
-class ExampleInput:
-    a: float
-    b: float
-
-def validate_input(data: dict) -> ExampleInput:
-    if "a" not in data or "b" not in data:
-        raise ValueError("Input must contain fields: a, b")
-    return ExampleInput(a=float(data["a"]), b=float(data["b"]))"""
