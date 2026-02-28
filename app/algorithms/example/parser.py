@@ -17,18 +17,19 @@ def _is_number(s: str) -> bool:
 
 def _parse_number(s: str) -> float:
     if not s.strip():
-        return 0.0
+        raise ValueError(f"Пустая строка не может быть числом: '{s}'")
+    s_parsed = s.replace(',', '.')
     try:
-        return float(s.replace(',', '.'))
+        return float(s_parsed)
     except ValueError:
-        return 0.0
+        raise ValueError(f"Некорректное число (содержит символы или неверный формат): '{s}'")
 
 
 def parse_ahp_csv(csv_text: str) -> Dict[str, Any]:
     """
     Парсит CSV и возвращает сырые данные без финальной валидации.
     Возвращает словарь с ключами:
-        m, n, criteria_names, pairwise, alt_names, scores
+        m, n, criteria_names, pairwise, alternative_names, scores
     """
     f = StringIO(csv_text.strip())
     reader = csv.reader(f, delimiter=';')
@@ -89,7 +90,13 @@ def parse_ahp_csv(csv_text: str) -> Dict[str, Any]:
         criteria_names.append(row[name_col].strip())
         for j in range(max_m):
             col = name_col + 1 + j
-            pairwise[crit_count][j] = _parse_number(row[col]) if col < len(row) and _is_number(row[col]) else 0.0
+            if col < len(row):
+                try:
+                    pairwise[crit_count][j] = _parse_number(row[col])
+                except ValueError as e:
+                    raise ValueError(f"Ошибка в матрице pairwise, строка {row_idx + 1}, колонка {col + 1}: {e}")
+            else:
+                pairwise[crit_count][j] = 0.0
         crit_count += 1
         row_idx += 1
 
@@ -125,19 +132,19 @@ def parse_ahp_csv(csv_text: str) -> Dict[str, Any]:
         raise ValueError("Не удалось найти строку с названиями альтернатив")
 
     # Сбор названий альтернатив
-    alt_names = []
+    alternative_names = []
     row = rows[alt_header_row]
     for j in range(alt_start_col, len(row)):
         cell = row[j]
         if cell and not _is_number(cell) and "Сортировать" not in cell:
-            alt_names.append(cell.strip())
+            alternative_names.append(cell.strip())
         else:
             break
 
-    if alt_names and alt_names[-1] == "Сортировать по возрастанию?":
-        alt_names.pop()
+    if alternative_names and alternative_names[-1] == "Сортировать по возрастанию?":
+        alternative_names.pop()
 
-    n = len(alt_names)
+    n = len(alternative_names)
 
     # ====================== 3. Сбор оценок (scores) ======================
     scores = [[0.0] * n for _ in range(m)]
@@ -163,8 +170,11 @@ def parse_ahp_csv(csv_text: str) -> Dict[str, Any]:
         val_start = name_col_scores + 1
         for alt_idx in range(n):
             col = val_start + alt_idx
-            if col < len(row) and _is_number(row[col]):
-                scores[criteria_found][alt_idx] = _parse_number(row[col])
+            if col < len(row):
+                try:
+                    scores[criteria_found][alt_idx] = _parse_number(row[col])
+                except ValueError as e:
+                    raise ValueError(f"Ошибка в матрице scores, строка {i + 1}, колонка {col + 1} (для критерия '{crit_name_expected}'): {e}")
 
         criteria_found += 1
 
@@ -173,6 +183,6 @@ def parse_ahp_csv(csv_text: str) -> Dict[str, Any]:
         "n": n,
         "criteria_names": criteria_names,
         "pairwise": pairwise,
-        "alt_names": alt_names,
+        "alternative_names": alternative_names,
         "scores": scores,
     }
