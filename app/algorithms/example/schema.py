@@ -16,22 +16,7 @@ class AHPInput:
     scores: List[List[float]]       # [критерий][альтернатива]
 
 
-def validate_input(data: dict) -> AHPInput:
-    """Точка входа — как было раньше"""
-    if "csv" not in data:
-        raise ValueError("Обязательное поле: csv (содержимое CSV-файла)")
-
-    csv_text = str(data["csv"]).strip()
-    if not csv_text:
-        raise ValueError("CSV пустой")
-
-    # Парсим
-    parsed: Dict[str, Any] = parse_ahp_csv(csv_text)
-
-    m = parsed["m"]
-    n = parsed["n"]
-
-    # Базовые проверки размеров
+def validate_sizes(m: int, n: int) -> None:
     if m > 19:
         raise ValueError("Количество критериев превышает 19")
     if n > 19:
@@ -39,28 +24,21 @@ def validate_input(data: dict) -> AHPInput:
     if m == 0 or n == 0:
         raise ValueError("Не найдены критерии или альтернативы")
 
-    criteria_names = parsed["criteria_names"]
-    alternative_names = parsed["alternative_names"]
-    pairwise = parsed["pairwise"]
-    scores = parsed["scores"]
 
-    # Проверка на отсутствие букв/некорректных значений (все элементы должны быть float без NaN/inf)
-    def validate_matrix(matrix, name, allow_zero=True, allow_negative=False):
-        for i, row in enumerate(matrix):
-            for j, val in enumerate(row):
-                if not isinstance(val, float):
-                    raise ValueError(f"Элемент в матрице {name} [{i}][{j}] не является числом: {val}")
-                if math.isnan(val) or math.isinf(val):
-                    raise ValueError(f"Элемент в матрице {name} [{i}][{j}] является NaN или inf: {val}")
-                if not allow_negative and val < 0:
-                    raise ValueError(f"Отрицательное значение в матрице {name} [{i}][{j}]: {val}")
-                if not allow_zero and val == 0:
-                    raise ValueError(f"Нулевое значение в матрице {name} [{i}][{j}], где не ожидалось: {val}")
+def validate_matrix(matrix: List[List[float]], name: str, allow_zero: bool = True, allow_negative: bool = False) -> None:
+    for i, row in enumerate(matrix):
+        for j, val in enumerate(row):
+            if not isinstance(val, float):
+                raise ValueError(f"Элемент в матрице {name} [{i}][{j}] не является числом: {val}")
+            if math.isnan(val) or math.isinf(val):
+                raise ValueError(f"Элемент в матрице {name} [{i}][{j}] является NaN или inf: {val}")
+            if not allow_negative and val < 0:
+                raise ValueError(f"Отрицательное значение в матрице {name} [{i}][{j}]: {val}")
+            if not allow_zero and val == 0:
+                raise ValueError(f"Нулевое значение в матрице {name} [{i}][{j}], где не ожидалось: {val}")
 
-    # Валидация pairwise
-    validate_matrix(pairwise, "pairwise", allow_zero=False, allow_negative=False)  # все >0, no neg/NaN
 
-    # Нормализация и специальные проверки для pairwise
+def normalize_and_validate_pairwise(pairwise: List[List[float]], m: int) -> None:
     for i in range(m):
         if pairwise[i][i] != 1.0:
             raise ValueError(f"Диагональный элемент в pairwise [{i}][{i}] не равен 1.0: {pairwise[i][i]}")
@@ -79,29 +57,43 @@ def validate_input(data: dict) -> AHPInput:
             elif a > 0 and b > 0 and abs(b - 1.0 / a) > 1e-6:
                 raise ValueError(f"Несоответствие в pairwise [{i}][{j}] и [{j}][{i}]: {a} и {b} не обратны")
 
-    # Валидация scores
-    validate_matrix(scores, "scores", allow_zero=True, allow_negative=True)  # allow 0/neg по шаблону (neg values in CSV)
 
-    # Проверка полноты: все строки в scores заполнены (no all-zero rows)
+def validate_scores(scores: List[List[float]], m: int) -> None:
+    validate_matrix(scores, "scores", allow_zero=True, allow_negative=True)
     for i in range(m):
         if all(val == 0 for val in scores[i]):
             raise ValueError(f"Строка {i} в scores полностью нулевая — критерий не заполнен")
 
+
+def validate_input(data: dict) -> AHPInput:
+    """Точка входа — как было раньше"""
+    if "csv" not in data:
+        raise ValueError("Обязательное поле: csv (содержимое CSV-файла)")
+
+    csv_text = str(data["csv"]).strip()
+    if not csv_text:
+        raise ValueError("CSV пустой")
+
+    # Парсим
+    parsed: Dict[str, Any] = parse_ahp_csv(csv_text)
+
+    m = parsed["m"]
+    n = parsed["n"]
+    criteria_names = parsed["criteria_names"]
+    pairwise = parsed["pairwise"]
+    alternative_names = parsed["alternative_names"]
+    scores = parsed["scores"]
+
+    validate_sizes(m, n)
+    validate_matrix(pairwise, "pairwise", allow_zero=False, allow_negative=False)
+    normalize_and_validate_pairwise(pairwise, m)
+    validate_scores(scores, m)
+
     # Другие: уникальность имен optional
     if len(set(criteria_names)) != m:
-        # warn: print("Warning: Дубликаты в criteria_names")
-        pass
+        pass  # warn if needed
     if len(set(alternative_names)) != n:
         pass
-
-    # Если нужно CR, но это compute-heavy, optional (require numpy?)
-    # import numpy as np
-    # eigenvalues = np.linalg.eigvals(pairwise)
-    # lambda_max = max(eigenvalues.real)
-    # CI = (lambda_max - m) / (m - 1)
-    # RI = {1:0,2:0,...19:random index table}
-    # CR = CI / RI[m]
-    # if CR > 0.1: raise or warn
 
     return AHPInput(
         m=m,
