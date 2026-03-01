@@ -68,7 +68,7 @@ def normalize_and_validate_pairwise(pairwise: List[List[float]], m: int) -> None
                 pairwise[i][j] = 1.0 / b
 
             elif a > 0 and b > 0:
-                if abs(b - 1.0 / a) > 1e-6:
+                if abs(a * b - 1.0) > 0.02:
                     raise ValueError(f"Несоответствие в pairwise [{i}][{j}] и [{j}][{i}]: "f"{a} и {b} не обратны")
 
 def validate_scores(scores: List[List[float]], m: int) -> None:
