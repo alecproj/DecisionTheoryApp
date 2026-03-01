@@ -48,18 +48,28 @@ def normalize_and_validate_pairwise(pairwise: List[List[float]], m: int) -> None
         for j in range(i + 1, m):
             a = pairwise[i][j]
             b = pairwise[j][i]
-            # Проверка верхнетреугольной: целые 1-20
-            if a != 0 and (not a.is_integer() or not 1 <= a <= 20):
-                raise ValueError(f"Верхнетреугольный элемент pairwise [{i}][{j}] не целое от 1 до 20: {a}")
-            if b != 0 and (not 0 < b <= 20):
-                raise ValueError(f"Нижнетреугольный элемент pairwise [{j}][{i}] не положительное: {b}")
+            # --- Верхнетреугольная часть ---
+            if a != 0:
+                if a <= 0:
+                    raise ValueError(f"Верхнетреугольный элемент pairwise [{i}][{j}] должен быть положительным: {a}")
+                if a > 20:
+                    raise ValueError(f"Верхнетреугольный элемент pairwise [{i}][{j}] превышает 20: {a}")
+            # --- Нижнетреугольная часть ---
+            if b != 0:
+                if b <= 0:
+                    raise ValueError(f"Нижнетреугольный элемент pairwise [{j}][{i}] должен быть положительным: {b}")
+                if b > 20:
+                    raise ValueError(f"Нижнетреугольный элемент pairwise [{j}][{i}] превышает 20: {b}")
+            # --- Нормализация ---
             if a > 0 and b == 0:
                 pairwise[j][i] = 1.0 / a
+
             elif b > 0 and a == 0:
                 pairwise[i][j] = 1.0 / b
-            elif a > 0 and b > 0 and abs(b - 1.0 / a) > 1e-6:
-                raise ValueError(f"Несоответствие в pairwise [{i}][{j}] и [{j}][{i}]: {a} и {b} не обратны")
 
+            elif a > 0 and b > 0:
+                if abs(b - 1.0 / a) > 1e-6:
+                    raise ValueError(f"Несоответствие в pairwise [{i}][{j}] и [{j}][{i}]: "f"{a} и {b} не обратны")
 
 def validate_scores(scores: List[List[float]], m: int) -> None:
     validate_matrix(scores, "scores", allow_zero=True, allow_negative=True)
