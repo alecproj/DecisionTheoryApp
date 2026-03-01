@@ -10,7 +10,12 @@
 <body>
   <h1>Ввод данных</h1>
   <p>Алгоритм: <b id="algorithm-id"></b></p>
-
+  <p class="muted">
+     Скачать шаблон Excel:
+     <a href="./assets/templates/method_analyzing_hierarchies.xlsx" download>
+       method_analyzing_hierarchies.xlsx
+     </a>
+  </p>
   <form id="input-form">
    <label>
      CSV файл
@@ -19,14 +24,19 @@
         Выбрать CSV файл
      </label>
    </label>
+
    <!-- Drop zone -->
    <div id="drop-zone">
      Перетащите CSV файл сюда или нажмите для выбора
    </div>
+
    <button type="submit">Запустить</button>
   </form>
+
   <p id="message" class="muted"></p>
+
   <p><a href="./index.html">← назад</a></p>
+
   <script src="./js/input.js"></script>
 </body>
 </html>
