@@ -15,17 +15,20 @@ def client():
     return app.test_client()
 
 def test_health(client):
+    """GET /health должен возвращать статус 200 и JSON с полем status=ok."""
     r = client.get("/health")
     assert r.status_code == 200
     assert r.json["status"] == "ok"
 
 def test_list_algorithms(client):
+    """GET /api/algorithms должен возвращать статус 200 и JSON с полем status=ok."""
     r = client.get("/api/algorithms")
     assert r.status_code == 200
     assert "algorithms" in r.json
     assert any(a["id"] == "example" for a in r.json["algorithms"])
 
 def test_run_and_report(client):
+    """Проверка полного цикла: запуск алгоритма, получение отчета по run_id"""
     # Требует запущенного MongoDB (docker-compose up -d mongo)
     r = client.post("/api/runs", json={"algorithm_id": "example", "input": {"a": 2, "b": 3}})
     assert r.status_code == 200

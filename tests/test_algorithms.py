@@ -3,6 +3,7 @@ from app.algorithms.example.algo import run
 from app.reporting.reporter import MarkdownReporter
 
 def test_example_algorithm_report():
+    """Check for md file is generated"""
     typed = validate_input({"a": 1, "b": 4})
     rep = MarkdownReporter()
     run(typed, rep)

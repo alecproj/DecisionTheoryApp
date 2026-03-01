@@ -19,7 +19,7 @@ dev = [
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-q"
+addopts = "-v"
 
 [tool.ruff]
 line-length = 100
