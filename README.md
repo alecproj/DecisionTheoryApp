@@ -30,6 +30,8 @@ DecisionTheoryApp/
 
   frontend/                 # Статичный фронтенд (локально и для GitHub Pages)
     src/                    # Исходники фронта
+      assets/templates      # Шаблоны проекта
+        method_analyzing_hierarchies.xlsx # Шаблон таблицы для ввода пользовательских данных
       css/                  # Стили интерфейса
         index.css           # Стили страницы выбора алгоритма
         input.css           # Стили страницы ввода входных данных

@@ -5,15 +5,32 @@
   <title>Decision Theory App — Input</title>
   <link rel="stylesheet" href="./css/input.css" />
   <script src="./config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
   <h1>Ввод данных</h1>
   <p>Алгоритм: <b id="algorithm-id"></b></p>
-
+  <p class="muted">
+     Скачать шаблон Excel:
+     <a href="./assets/templates/method_analyzing_hierarchies.xlsx" download>
+       method_analyzing_hierarchies.xlsx
+     </a>
+  </p>
   <form id="input-form">
-    <label>a <input id="a" name="param1" type="number" value="2" step="1" required /></label><br/>
-    <label>b <input id="b" name="param2" type="number" value="3" step="1" required /></label><br/>
-    <button type="submit">Запустить</button>
+   <label>
+     CSV файл
+     <input id="file-input" type="file" accept=".csv,.xlsx,.xls" required hidden />
+     <label for="file-input" id="file-button">
+        Выбрать CSV файл
+     </label>
+   </label>
+
+   <!-- Drop zone -->
+   <div id="drop-zone">
+     Перетащите CSV файл сюда или нажмите для выбора
+   </div>
+
+   <button type="submit">Запустить</button>
   </form>
 
   <p id="message" class="muted"></p>
