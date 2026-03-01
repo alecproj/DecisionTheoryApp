@@ -8,14 +8,23 @@
 </head>
 <body>
   <h1>Выбор алгоритма</h1>
-  <p class="muted">Режим: <b id="mode"></b></p>
+  <p id="mode-line" class="muted">Режим: <b id="mode"></b></p>
 
   <ul id="algorithms">
     <li>Загрузка...</li>
   </ul>
-
+     
   <script>
-    document.getElementById("mode").textContent = window.APP_MODE;
+    const mode = window.APP_MODE || "real";
+	  const modeEl = document.getElementById("mode");
+	  const lineEl = document.getElementById("mode-line");
+     
+   	if (modeEl) modeEl.textContent = mode;
+    
+	  // Показываем строку ТОЛЬКО в mock
+	  if (mode !== "mock" && lineEl) {
+	    lineEl.style.display = "none";
+	  }
   </script>
   <script src="./js/index.js"></script>
 </body>
