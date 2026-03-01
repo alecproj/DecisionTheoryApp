@@ -1,6 +1,6 @@
 # schema.py
 from dataclasses import dataclass
-from typing import List, Dict, Any
+from typing import List, Optional
 import math
 
 from parser import parse_ahp_csv   # <-- импорт парсера
@@ -14,11 +14,9 @@ class AHPInput:
     pairwise: List[List[float]]
     alternative_names: List[str]
     scores: List[List[float]]       # [критерий][альтернатива]
-<<<<<<< Updated upstream
-=======
     sort_asc: List[bool]            # флаги сортировки по возрастанию
     alternative_pairwise: Optional[List[List[List[float]]]] = None  # m матриц парных сравнений альтернатив по критериям (каждая n x n);
->>>>>>> Stashed changes
+
 
 
 def validate_sizes(m: int, n: int) -> None:
@@ -80,7 +78,7 @@ def validate_input(data: dict) -> AHPInput:
         raise ValueError("CSV пустой")
 
     # Парсим
-    parsed: Dict[str, Any] = parse_ahp_csv(csv_text)
+    parsed = parse_ahp_csv(csv_text)
 
     m = parsed["m"]
     n = parsed["n"]
@@ -107,9 +105,6 @@ def validate_input(data: dict) -> AHPInput:
         pairwise=pairwise,
         alternative_names=alternative_names,
         scores=scores,
-<<<<<<< Updated upstream
-=======
         sort_asc=parsed["sort_asc"],
         alternative_pairwise=None
->>>>>>> Stashed changes
     )
