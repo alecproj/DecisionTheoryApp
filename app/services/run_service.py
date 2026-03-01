@@ -5,11 +5,11 @@ from app.algorithms.registry import get_algorithm
 from app.reporting.reporter import MarkdownReporter
 from app.db.mongo import runs_col, reports_col
 
-def create_run(algorithm_id: str, input_data: dict) -> str:
+def create_run(algorithm_id: str, file_bytes: bytes) -> str:
     algo = get_algorithm(algorithm_id)
 
-    # 1) validate
-    typed_input = algo.validate(input_data)
+    # 1) validate (работаем с CSV bytes)
+    typed_input = algo.validate(file_bytes)
 
     # 2) run + report
     reporter = MarkdownReporter()
@@ -18,11 +18,13 @@ def create_run(algorithm_id: str, input_data: dict) -> str:
 
     # 3) store
     now = datetime.now(timezone.utc)
+
     run_doc = {
         "algorithm_id": algorithm_id,
-        "input": input_data,
+        "input_csv": file_bytes.decode("utf-8"),
         "created_at": now,
     }
+
     run_id = runs_col().insert_one(run_doc).inserted_id
 
     reports_col().insert_one({
