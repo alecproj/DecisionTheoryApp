@@ -152,12 +152,14 @@ def main():
         print(f"  m = {parsed.m}")
         print(f"  criteria_names = {parsed.criteria_names}")
         print(f"  alternative_names = {parsed.alternative_names}")
+        print(f"  sort_asc = {parsed.sort_asc}")
         print("\nМатрица парных сравнений (pairwise):")
         for row in parsed.pairwise:
             print([round(x, 3) for x in row])
         print("\nМатрица оценок (scores):")
         for row in parsed.scores:
             print([round(x, 2) for x in row])
+
 
     except ValueError as e:
         print("Ошибка валидации:")
