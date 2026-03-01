@@ -123,8 +123,9 @@ def parse_alternative_names(rows: List[List[str]], alt_header_row: int, alt_star
     return alternative_names
 
 
-def parse_scores(rows: List[List[str]], criteria_names: List[str], data_row_start: int, m: int, n: int) -> List[List[float]]:
+def parse_scores(rows: List[List[str]], criteria_names: List[str], data_row_start: int, m: int, n: int) -> tuple[List[List[float]], List[bool]]:
     scores = [[0.0] * n for _ in range(m)]
+    sort_asc = [True] * m  # default True (ascending)
     criteria_found = 0
     for i in range(data_row_start, len(rows)):
         if criteria_found >= m:
@@ -148,10 +149,22 @@ def parse_scores(rows: List[List[str]], criteria_names: List[str], data_row_star
                     scores[criteria_found][alt_idx] = _parse_number(row[col])
                 except ValueError as e:
                     raise ValueError(f"Ошибка в матрице scores, строка {i + 1}, колонка {col + 1} (для критерия '{crit_name_expected}'): {e}")
+        # Parse sort_asc (last non-empty cell or specific column)
+        # Find the last number in the row (assuming it's the flag)
+        flag = None
+        for col in range(len(row) - 1, -1, -1):
+            if _is_number(row[col]):
+                flag = row[col]
+                break
+        if flag is not None:
+            try:
+                sort_asc[criteria_found] = bool(int(_parse_number(flag)))
+            except ValueError as e:
+                raise ValueError(f"Ошибка в флаге сортировки, строка {i + 1}, колонка {col + 1} (для критерия '{crit_name_expected}'): {e}")
         criteria_found += 1
     if criteria_found < m:
         raise ValueError(f"Нашли только {criteria_found} строк в матрице scores, ожидалось {m}")
-    return scores
+    return scores, sort_asc
 
 
 def parse_ahp_csv(csv_text: str) -> Dict[str, Any]:
@@ -181,7 +194,7 @@ def parse_ahp_csv(csv_text: str) -> Dict[str, Any]:
     alternative_names = parse_alternative_names(rows, alt_header_row, alt_start_col)
     n = len(alternative_names)
 
-    scores = parse_scores(rows, criteria_names, alt_header_row + 1, m, n)
+    scores, sort_asc = parse_scores(rows, criteria_names, alt_header_row + 1, m, n)
 
     return {
         "m": m,
@@ -190,4 +203,5 @@ def parse_ahp_csv(csv_text: str) -> Dict[str, Any]:
         "pairwise": pairwise,
         "alternative_names": alternative_names,
         "scores": scores,
+        "sort_asc": sort_asc
     }

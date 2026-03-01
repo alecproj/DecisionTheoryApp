@@ -14,6 +14,11 @@ class AHPInput:
     pairwise: List[List[float]]
     alternative_names: List[str]
     scores: List[List[float]]       # [критерий][альтернатива]
+<<<<<<< Updated upstream
+=======
+    sort_asc: List[bool]            # флаги сортировки по возрастанию
+    alternative_pairwise: Optional[List[List[List[float]]]] = None  # m матриц парных сравнений альтернатив по критериям (каждая n x n);
+>>>>>>> Stashed changes
 
 
 def validate_sizes(m: int, n: int) -> None:
@@ -102,4 +107,9 @@ def validate_input(data: dict) -> AHPInput:
         pairwise=pairwise,
         alternative_names=alternative_names,
         scores=scores,
+<<<<<<< Updated upstream
+=======
+        sort_asc=parsed["sort_asc"],
+        alternative_pairwise=None
+>>>>>>> Stashed changes
     )
