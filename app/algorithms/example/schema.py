@@ -2,6 +2,7 @@
 from dataclasses import dataclass
 from typing import List, Optional
 import math
+import re
 
 from parser import parse_ahp_csv   # <-- импорт парсера
 
@@ -26,7 +27,6 @@ def validate_sizes(m: int, n: int) -> None:
         raise ValueError("Количество альтернатив превышает 19")
     if m == 0 or n == 0:
         raise ValueError("Не найдены критерии или альтернативы")
-
 
 def validate_matrix(matrix: List[List[float]], name: str, allow_zero: bool = True, allow_negative: bool = False) -> None:
     for i, row in enumerate(matrix):
@@ -86,6 +86,7 @@ def validate_input(data: dict) -> AHPInput:
     pairwise = parsed["pairwise"]
     alternative_names = parsed["alternative_names"]
     scores = parsed["scores"]
+    sort_asc = parsed["sort_asc"]
 
     validate_sizes(m, n)
     validate_matrix(pairwise, "pairwise", allow_zero=False, allow_negative=False)
@@ -105,6 +106,6 @@ def validate_input(data: dict) -> AHPInput:
         pairwise=pairwise,
         alternative_names=alternative_names,
         scores=scores,
-        sort_asc=parsed["sort_asc"],
+        sort_asc=sort_asc,
         alternative_pairwise=None
     )
