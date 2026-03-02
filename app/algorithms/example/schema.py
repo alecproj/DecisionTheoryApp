@@ -1,121 +1,117 @@
-# schema.py
+from typing import Any, Dict, List, Optional
 from dataclasses import dataclass
-from typing import List, Optional
-import math
-import re
-
-from parser import parse_ahp_csv   # <-- импорт парсера
-
+from parser import (
+    read_csv,
+    validate_template,
+    parse_criteria_table,
+    parse_alternative_table,
+    calc_alternative_pairwise,
+)
 
 @dataclass(frozen=True)
 class AHPInput:
-    m: int                          # количество критериев
-    n: int                          # количество альтернатив
+    criterias_cnt: int
+    alternatives_cnt: int
     criteria_names: List[str]
-    pairwise: List[List[float]]
     alternative_names: List[str]
-    scores: List[List[float]]       # [критерий][альтернатива]
-    sort_asc: List[bool]            # флаги сортировки по возрастанию
-    alternative_pairwise: Optional[List[List[List[float]]]] = None  # m матриц парных сравнений альтернатив по критериям (каждая n x n);
+    criteria_pairwise: List[List[float]]
+    alternative_pairwise: Optional[List[List[List[float]]]] = None
 
 
+def validator(input_data: Dict[str, Any]) -> AHPInput:
+    """
+    Точка входа.
+    Получает CSV, полностью валидирует и возвращает AHPInput.
+    """
 
-def validate_sizes(m: int, n: int) -> None:
-    if m > 19:
-        raise ValueError("Количество критериев превышает 19")
-    if n > 19:
-        raise ValueError("Количество альтернатив превышает 19")
-    if m == 0 or n == 0:
-        raise ValueError("Не найдены критерии или альтернативы")
+    # --------------------------------------------------
+    # 1. Проверка входа
+    # --------------------------------------------------
 
-def validate_matrix(matrix: List[List[float]], name: str, allow_zero: bool = True, allow_negative: bool = False) -> None:
-    for i, row in enumerate(matrix):
-        for j, val in enumerate(row):
-            if not isinstance(val, float):
-                raise ValueError(f"Элемент в матрице {name} [{i}][{j}] не является числом: {val}")
-            if math.isnan(val) or math.isinf(val):
-                raise ValueError(f"Элемент в матрице {name} [{i}][{j}] является NaN или inf: {val}")
-            if not allow_negative and val < 0:
-                raise ValueError(f"Отрицательное значение в матрице {name} [{i}][{j}]: {val}")
-            if not allow_zero and val == 0:
-                raise ValueError(f"Нулевое значение в матрице {name} [{i}][{j}], где не ожидалось: {val}")
+    if "csv" not in input_data:
+        raise ValueError("Обязательное поле: csv")
 
-
-def normalize_and_validate_pairwise(pairwise: List[List[float]], m: int) -> None:
-    for i in range(m):
-        if pairwise[i][i] != 1.0:
-            raise ValueError(f"Диагональный элемент в pairwise [{i}][{i}] не равен 1.0: {pairwise[i][i]}")
-        for j in range(i + 1, m):
-            a = pairwise[i][j]
-            b = pairwise[j][i]
-            # --- Верхнетреугольная часть ---
-            if a != 0:
-                if a <= 0:
-                    raise ValueError(f"Верхнетреугольный элемент pairwise [{i}][{j}] должен быть положительным: {a}")
-                if a > 20:
-                    raise ValueError(f"Верхнетреугольный элемент pairwise [{i}][{j}] превышает 20: {a}")
-            # --- Нижнетреугольная часть ---
-            if b != 0:
-                if b <= 0:
-                    raise ValueError(f"Нижнетреугольный элемент pairwise [{j}][{i}] должен быть положительным: {b}")
-                if b > 20:
-                    raise ValueError(f"Нижнетреугольный элемент pairwise [{j}][{i}] превышает 20: {b}")
-            # --- Нормализация ---
-            if a > 0 and b == 0:
-                pairwise[j][i] = 1.0 / a
-
-            elif b > 0 and a == 0:
-                pairwise[i][j] = 1.0 / b
-
-            elif a > 0 and b > 0:
-                if abs(a * b - 1.0) > 0.02:
-                    raise ValueError(f"Несоответствие в pairwise [{i}][{j}] и [{j}][{i}]: "f"{a} и {b} не обратны")
-
-def validate_scores(scores: List[List[float]], m: int) -> None:
-    validate_matrix(scores, "scores", allow_zero=True, allow_negative=True)
-    for i in range(m):
-        if all(val == 0 for val in scores[i]):
-            raise ValueError(f"Строка {i} в scores полностью нулевая — критерий не заполнен")
-
-
-def validate_input(data: dict) -> AHPInput:
-    """Точка входа — как было раньше"""
-    if "csv" not in data:
-        raise ValueError("Обязательное поле: csv (содержимое CSV-файла)")
-
-    csv_text = str(data["csv"]).strip()
+    csv_text = str(input_data["csv"]).strip()
     if not csv_text:
         raise ValueError("CSV пустой")
 
-    # Парсим
-    parsed = parse_ahp_csv(csv_text)
+    # --------------------------------------------------
+    # 2. Чтение CSV
+    # --------------------------------------------------
 
-    m = parsed["m"]
-    n = parsed["n"]
-    criteria_names = parsed["criteria_names"]
-    pairwise = parsed["pairwise"]
-    alternative_names = parsed["alternative_names"]
-    scores = parsed["scores"]
-    sort_asc = parsed["sort_asc"]
+    try:
+        rows = read_csv(csv_text)
+    except Exception as e:
+        raise ValueError(f"Ошибка чтения CSV: {e}")
 
-    validate_sizes(m, n)
-    validate_matrix(pairwise, "pairwise", allow_zero=False, allow_negative=False)
-    normalize_and_validate_pairwise(pairwise, m)
-    validate_scores(scores, m)
+    # --------------------------------------------------
+    # 3. Проверка шаблона
+    # --------------------------------------------------
 
-    # Другие: уникальность имен optional
-    if len(set(criteria_names)) != m:
-        pass  # warn if needed
-    if len(set(alternative_names)) != n:
-        pass
+    try:
+        validate_template(rows)
+    except Exception as e:
+        raise ValueError(f"Неверный шаблон CSV: {e}")
+
+    # --------------------------------------------------
+    # 4. Парсинг критериев
+    # --------------------------------------------------
+
+    try:
+        criteria_names, criteria_pairwise, criterias_cnt = \
+            parse_criteria_table(rows)
+    except Exception as e:
+        raise ValueError(f"Ошибка парсинга критериев: {e}")
+
+    # --------------------------------------------------
+    # 5. Парсинг альтернатив
+    # --------------------------------------------------
+
+    try:
+        (
+            alternative_names,
+            scores,
+            sort_flags,
+            alternatives_cnt
+        ) = parse_alternative_table(
+            rows,
+            criteria_names,
+            criterias_cnt
+        )
+    except Exception as e:
+        raise ValueError(f"Ошибка парсинга альтернатив: {e}")
+
+    # --------------------------------------------------
+    # 6. Генерация матриц альтернатив
+    # --------------------------------------------------
+
+    try:
+        alternative_pairwise = calc_alternative_pairwise(
+            scores,
+            sort_flags
+        )
+    except Exception as e:
+        raise ValueError(f"Ошибка генерации альтернативных матриц: {e}")
+
+    # --------------------------------------------------
+    # 7. Финальная согласованность размеров
+    # --------------------------------------------------
+
+    if criterias_cnt != len(alternative_pairwise):
+        raise ValueError(
+            "Количество критериев не совпадает "
+            "с количеством матриц альтернатив"
+        )
+
+    # --------------------------------------------------
+    # 8. Возврат модели
+    # --------------------------------------------------
 
     return AHPInput(
-        m=m,
-        n=n,
+        criterias_cnt=criterias_cnt,
+        alternatives_cnt=alternatives_cnt,
         criteria_names=criteria_names,
-        pairwise=pairwise,
         alternative_names=alternative_names,
-        scores=scores,
-        sort_asc=sort_asc,
-        alternative_pairwise=None
+        criteria_pairwise=criteria_pairwise,
+        alternative_pairwise=alternative_pairwise
     )
