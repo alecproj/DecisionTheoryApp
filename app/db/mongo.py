@@ -1,3 +1,4 @@
+#mongo.py
 import os
 from pymongo import MongoClient
 from pymongo.collection import Collection
@@ -20,3 +21,6 @@ def runs_col() -> Collection:
 
 def reports_col() -> Collection:
     return get_db()["reports"]
+
+def csv_col(algorithm_id: str) -> Collection:
+    return get_db()[f"csv_{algorithm_id}"]
