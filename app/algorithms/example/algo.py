@@ -1,3 +1,4 @@
+#algo.py
 from app.algorithms.example.schema import ExampleInput
 
 def run(input_data: ExampleInput, reporter) -> None:

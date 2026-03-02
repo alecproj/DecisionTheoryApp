@@ -1,3 +1,4 @@
+#algorithms.py
 from flask import Blueprint, request
 from app.algorithms.registry import list_algorithms, get_algorithm
 

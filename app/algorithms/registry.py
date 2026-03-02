@@ -1,3 +1,4 @@
+#registry.py
 from dataclasses import dataclass
 from typing import Callable, Any
 
@@ -11,7 +12,7 @@ class AlgorithmMeta:
     description: str
     guide_link: str
     template_link: str
-    validate: Callable[[dict], Any]   # dict -> typed input
+    validate: Callable[[bytes], Any]
     run: Callable[[Any, Any], None]   # (typed input, reporter) -> None
 
 ALGORITHMS: dict[str, AlgorithmMeta] = {
