@@ -36,8 +36,13 @@ def create_run(algorithm_id: str, filename: str, file_bytes: bytes) -> str:
     now = datetime.now(timezone.utc)
 
     run_doc = {
-        "algorithm_id": algorithm_id,
+        "algorithm_id": algo.id,
+        "algorithm_name": algo.name,
+        "algorithm_description": algo.description,
+        "guide_link": algo.guide_link,
+        "template_link": algo.template_link,
         "input_csv": file_bytes.decode("utf-8-sig"),
+        "filename": filename,
         "created_at": now,
     }
 
@@ -50,7 +55,6 @@ def create_run(algorithm_id: str, filename: str, file_bytes: bytes) -> str:
     })
 
     return str(run_id)
-
 
 def get_report(run_id: str) -> dict:
     oid = ObjectId(run_id)
