@@ -1,4 +1,4 @@
-from schema import validator
+from schema import ahp_validator
 
 # ← сюда вставить текст реального CSV-файла
 # ПРОВЕРКА РАБОТЫ ПАРСЕРА (19 альтернатив, 19 критериев)
@@ -145,7 +145,7 @@ def main():
     fake_input = {"csv": CSV_EXAMPLE}
 
     try:
-        parsed = validator(fake_input)
+        parsed = ahp_validator(fake_input)
 
         print("Парсинг прошёл успешно!\n")
 

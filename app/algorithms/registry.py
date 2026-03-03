@@ -3,6 +3,8 @@ from typing import Callable, Any
 
 from app.algorithms.example.schema import validate_input
 from app.algorithms.example.algo import run as example_run
+from app.algorithms.analytic_hierarchy_process.schema import validator as ahp_validate
+from app.algorithms.analytic_hierarchy_process.algo import run as ahp_run
 
 @dataclass(frozen=True)
 class AlgorithmMeta:
@@ -17,6 +19,12 @@ ALGORITHMS: dict[str, AlgorithmMeta] = {
         name="Example (a+b)",
         validate=validate_input,
         run=example_run,
+    ),
+    "ahp": AlgorithmMeta(
+        id="ahp",
+        name="Метод анализа иерархий",
+        validate=ahp_validate,
+        run=ahp_run,
     )
 }
 
