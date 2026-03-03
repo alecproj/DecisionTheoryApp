@@ -21,45 +21,45 @@ def create_run(algorithm_id: str, filename: str, file_bytes: bytes) -> str:
     algo = get_algorithm(algorithm_id)
 
     # 1) сохраняем сырой CSV
-    upload_csv(algorithm_id, filename, file_bytes)
+    upload_id = upload_csv(algorithm_id, filename, file_bytes)
 
-    # 2) validate
     try:
+        # 2) validate
         typed_input = algo.validate(file_bytes)
-    except ValueError as e:
-        raise ValueError(str(e))
 
-    # 3) run + report
-    try:
+        # 3) run + report
         reporter = MarkdownReporter()
-        reporter.h1(filename)  # отчёт начинается с "# <filename>"
+        reporter.h1(filename)
         algo.run(typed_input, reporter)
         md = reporter.get_markdown()
+
+        # 4) store
+        now = datetime.now(timezone.utc)
+
+        run_doc = {
+            "algorithm_id": algo.id,
+            "algorithm_name": algo.name,
+            "algorithm_description": algo.description,
+            "guide_link": algo.guide_link,
+            "template_link": algo.template_link,
+            "input_csv": file_bytes.decode("utf-8-sig"),
+            "filename": filename,
+            "created_at": now,
+        }
+
+        run_id = runs_col().insert_one(run_doc).inserted_id
+
+        reports_col().insert_one({
+            "run_id": run_id,
+            "filename": filename,
+            "markdown": md,
+            "created_at": now,
+        })
+
     except Exception as e:
-        raise ValueError(f"Ошибка при выполнении алгоритма: {str(e)}")
-
-    # 4) store
-    now = datetime.now(timezone.utc)
-
-    run_doc = {
-        "algorithm_id": algo.id,
-        "algorithm_name": algo.name,
-        "algorithm_description": algo.description,
-        "guide_link": algo.guide_link,
-        "template_link": algo.template_link,
-        "input_csv": file_bytes.decode("utf-8-sig"),
-        "filename": filename,
-        "created_at": now,
-    }
-
-    run_id = runs_col().insert_one(run_doc).inserted_id
-
-    reports_col().insert_one({
-        "run_id": run_id,
-        "filename": filename,
-        "markdown": md,
-        "created_at": now,
-    })
+        # при любой ошибке удаляем сырой CSV из Mongo
+        csv_col(algorithm_id).delete_one({"_id": ObjectId(upload_id)})
+        raise
 
     return str(run_id)
 
@@ -69,4 +69,8 @@ def get_report(run_id: str) -> dict:
     rep = reports_col().find_one({"run_id": oid})
     if not rep:
         raise KeyError("Отчёт не найден")
-    return {"run_id": run_id, "markdown": rep["markdown"]}
+    return {
+        "run_id": run_id,
+        "filename": rep["filename"],
+        "markdown": rep["markdown"]
+    }
