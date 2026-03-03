@@ -5,6 +5,7 @@ from app.api.reports import bp as reports_bp
 
 def create_app() -> Flask:
     app = Flask(__name__)
+
     app.register_blueprint(algorithms_bp)
     app.register_blueprint(runs_bp)
     app.register_blueprint(reports_bp)

@@ -1,4 +1,3 @@
-#runs_service.py
 from datetime import datetime, timezone
 from bson import ObjectId
 
@@ -25,12 +24,19 @@ def create_run(algorithm_id: str, filename: str, file_bytes: bytes) -> str:
     upload_csv(algorithm_id, filename, file_bytes)
 
     # 2) validate
-    typed_input = algo.validate(file_bytes)
+    try:
+        typed_input = algo.validate(file_bytes)
+    except ValueError as e:
+        raise ValueError(str(e))
 
     # 3) run + report
-    reporter = MarkdownReporter()
-    algo.run(typed_input, reporter)
-    md = reporter.get_markdown()
+    try:
+        reporter = MarkdownReporter()
+        reporter.h1(filename)  # отчёт начинается с "# <filename>"
+        algo.run(typed_input, reporter)
+        md = reporter.get_markdown()
+    except Exception as e:
+        raise ValueError(f"Ошибка при выполнении алгоритма: {str(e)}")
 
     # 4) store
     now = datetime.now(timezone.utc)
@@ -50,15 +56,17 @@ def create_run(algorithm_id: str, filename: str, file_bytes: bytes) -> str:
 
     reports_col().insert_one({
         "run_id": run_id,
+        "filename": filename,
         "markdown": md,
         "created_at": now,
     })
 
     return str(run_id)
 
+
 def get_report(run_id: str) -> dict:
     oid = ObjectId(run_id)
     rep = reports_col().find_one({"run_id": oid})
     if not rep:
-        raise KeyError("Report not found")
+        raise KeyError("Отчёт не найден")
     return {"run_id": run_id, "markdown": rep["markdown"]}

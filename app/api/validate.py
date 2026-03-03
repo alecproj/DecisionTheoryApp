@@ -1,11 +1,18 @@
 from flask import Blueprint, request
 from app.services.run_service import create_run
+from app.algorithms.registry import get_algorithm
 
-bp = Blueprint("runs_api", __name__, url_prefix="/api")
+bp = Blueprint("validate_api", __name__, url_prefix="/api")
 
+@bp.post("/validate/<algorithm_id>")
+def validate_and_run(algorithm_id: str):
+    # 1) проверяем алгоритм
+    try:
+        get_algorithm(algorithm_id)
+    except KeyError:
+        return {"error": f"Алгоритм '{algorithm_id}' не найден"}, 404
 
-@bp.post("/runs/<algorithm_id>")
-def runs_create(algorithm_id: str):
+    # 2) проверяем файл
     if "file" not in request.files:
         return {"error": "Файл не передан"}, 400
 
@@ -22,10 +29,9 @@ def runs_create(algorithm_id: str):
     if not file_bytes:
         return {"error": "Файл пустой"}, 400
 
+    # 3) валидация + запуск + сохранение в Mongo
     try:
         run_id = create_run(algorithm_id, file.filename, file_bytes)
-    except KeyError:
-        return {"error": f"Алгоритм '{algorithm_id}' не найден"}, 404
     except ValueError as e:
         return {"error": str(e)}, 400
 
