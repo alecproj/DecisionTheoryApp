@@ -1,8 +1,139 @@
 from app.algorithms.example.schema import ExampleInput
 
-def run(input_data: ExampleInput, reporter) -> None:
-    reporter.h1("Example algorithm")
-    reporter.text("This is a stub algorithm for test запуск.")
-    s = input_data.a + input_data.b
-    reporter.h2("Result")
-    reporter.table(["a", "b", "a+b"], [[input_data.a, input_data.b, s]])
+import numpy as np
+from schema import AHPInput
+from ahp import calculate_priorities, calculate_consistency
+
+def run(input_data: AHPInput, reporter) -> None:
+
+    reporter.h1("Метод анализа иерархий (AHP)")
+
+    # --------------------------------------------------
+    # 1. Основные данные
+    # --------------------------------------------------
+
+    reporter.h2("Критерии и альтернативы")
+
+    reporter.text("Критерии:")
+    for c in input_data.criteria_names:
+        reporter.text(f"- {c}")
+
+    reporter.text("\nАльтернативы:")
+    for a in input_data.alternative_names:
+        reporter.text(f"- {a}")
+
+    # --------------------------------------------------
+    # 2. Веса критериев
+    # --------------------------------------------------
+
+    reporter.h2("Веса критериев")
+
+    criteria_weights = calculate_priorities(input_data.criteria_pairwise)
+
+    rows = []
+    for name, w in zip(input_data.criteria_names, criteria_weights):
+        rows.append([name, round(float(w), 4)])
+
+    reporter.table(
+        ["Критерий", "Вес"],
+        rows
+    )
+
+    # --------------------------------------------------
+    # 3. Проверка согласованности
+    # --------------------------------------------------
+
+    # --------------------------------------------------
+    # 3. Проверка согласованности
+    # --------------------------------------------------
+
+    reporter.h2("Оценка согласованности")
+
+    # calculate_consistency возвращает (CI, CR)
+    ci, cr = calculate_consistency(
+        input_data.criteria_pairwise,
+        criteria_weights
+    )
+
+    reporter.text(
+        "Согласованность показывает, насколько логично "
+        "эксперт выполнил парные сравнения критериев."
+    )
+
+    reporter.text("")
+
+    reporter.table(
+        ["Показатель", "Значение"],
+        [
+            ["Индекс согласованности (CI)", round(float(ci), 6)],
+            ["Коэффициент согласованности (CR)", round(float(cr), 6)],
+        ]
+    )
+
+    if cr < 0.1:
+        reporter.text(
+            f"Матрица критериев согласована хорошо (CR = {cr:.4f})"
+        )
+    else:
+        reporter.text(
+            f"Матрица критериев согласована плохо (CR = {cr:.4f})"
+        )
+
+    # --------------------------------------------------
+    # 4. Глобальная матрица
+    # --------------------------------------------------
+
+    reporter.h2("Глобальная матрица")
+    local_priorities = [
+        calculate_priorities(matrix)
+        for matrix in input_data.alternative_pairwise
+    ]
+    local_matrix = np.array(local_priorities).T
+    global_matrix = local_matrix * criteria_weights
+
+    rows = []
+    for alt_idx, alt_name in enumerate(input_data.alternative_names):
+        row = [alt_name]
+        row.extend(round(float(x), 4) for x in global_matrix[alt_idx])
+        rows.append(row)
+
+    headers = ["Альтернатива"] + input_data.criteria_names
+
+    reporter.table(headers, rows)
+
+    # --------------------------------------------------
+    # 6. Итоговые рейтинги
+    # --------------------------------------------------
+
+    reporter.h2("Итоговые рейтинги альтернатив")
+
+    final_scores = global_matrix.sum(axis=1)
+
+    sorted_idx = np.argsort(final_scores)[::-1]
+
+    rows = []
+    for i in sorted_idx:
+        rows.append([
+            input_data.alternative_names[i],
+            round(float(final_scores[i]), 4)
+        ])
+
+    reporter.table(
+        ["Альтернатива", "Итоговый рейтинг"],
+        rows
+    )
+
+    # --------------------------------------------------
+    # 7. Итоговый вывод
+    # --------------------------------------------------
+
+    best_idx = sorted_idx[0]
+    best_alt = input_data.alternative_names[best_idx]
+
+    reporter.h2("Вывод")
+
+    reporter.text(
+        f"Лучшей альтернативой является **{best_alt}**, "
+        f"поскольку она имеет наибольший итоговый рейтинг "
+        f"({final_scores[best_idx]:.4f})."
+    )

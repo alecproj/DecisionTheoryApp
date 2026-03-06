@@ -1,7 +1,7 @@
 
 from schema import validator
-from ahp import run_ahp
-
+from algo import run
+from ahp_reporter import MarkdownReporter
 # ← сюда вставить текст реального CSV-файла
 # Для теста используем сокращённый пример (9 альтернатив, 4 критерия)
 CSV_EXAMPLE = """\
@@ -37,66 +37,20 @@ AHP;;;;;;;Значения критериев;;;;;;;;;;;;;;;;;;;;
 """
 
 def main():
-    fake_input = {"csv": CSV_EXAMPLE}
 
-    try:
-        parsed = validator(fake_input)
-        print("Парсинг прошёл успешно!")
+    parsed = validator({"csv": CSV_EXAMPLE})
 
-        # --------------------------------------------------
-        # Основные данные
-        # --------------------------------------------------
+    reporter = MarkdownReporter()
 
-        print("\n=== Основные данные ===")
-        print(f"Количество критериев : {parsed.criterias_cnt}")
-        print(f"Количество альтернатив : {parsed.alternatives_cnt}")
+    run(parsed, reporter)
 
-        print("\nКритерии:")
-        for i, name in enumerate(parsed.criteria_names, 1):
-            print(f"  {i}. {name}")
+    markdown = reporter.get_markdown()
 
-        print("\nАльтернативы:")
-        for i, name in enumerate(parsed.alternative_names, 1):
-            print(f"  {i}. {name}")
+    # сохраняем файл
+    with open("ahp_report.md", "w", encoding="utf-8") as f:
+        f.write(markdown)
 
-        # --------------------------------------------------
-        # Матрица критериев
-        # --------------------------------------------------
-        print("\nМатрица парных сравнений критериев:")
-        for row in parsed.criteria_pairwise:
-            print([round(x, 3) for x in row])
-
-        # --------------------------------------------------
-        # Матрицы альтернатив
-        # --------------------------------------------------
-        print("\n=== Матрицы сравнения альтернатив по критериям ===")
-        for k, matrix in enumerate(parsed.alternative_pairwise):
-            print(f"\nКритерий {k+1} ({parsed.criteria_names[k]}):")
-            for row in matrix:
-                print([round(x, 3) for x in row])
-        # --------------------------------------------------
-        # Запуск AHP
-        # --------------------------------------------------
-        print("\n=== Результат AHP ===")
-        result = run_ahp(parsed)
-
-        print("\nВеса критериев:")
-        print(result["criteria_weights"])
-
-        print("\nИтоговые рейтинги:")
-        for name, rating in zip(
-            result["sorted_alternatives"],
-            result["sorted_ratings"]
-        ):
-            print(f"{name}: {round(rating, 4)}")
-
-    except ValueError as e:
-        print("Ошибка валидации:")
-        print(e)
-    except Exception as e:
-        print("Неожиданная ошибка:")
-        print(type(e).__name__, str(e))
-
+    print("Отчёт сохранён в файл ahp_report.md")
 
 if __name__ == "__main__":
     main()
