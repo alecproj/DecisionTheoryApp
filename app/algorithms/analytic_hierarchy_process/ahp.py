@@ -120,21 +120,17 @@ def _sort_alternatives(ratings: np.ndarray,
 # ==========================================================
 
 # Основной алгоритм метода анализа иерархий (AHP):
-def run_ahp(input: AHPInput) -> Dict[str, any]:
+def ahp(input: AHPInput) -> Dict[str, any]:
 
     # Шаг 1 — вычисление весов критериев
     criteria_weights, cr_criteria = _process_criteria(input)
-
     # Шаг 2 — вычисление локальных приоритетов альтернатив
     local_priorities, cr_alternatives = _process_alternatives(input)
-
     # Шаг 3 — формирование глобальной модели
     global_matrix = _build_global_matrix(local_priorities,
                                          criteria_weights)
-
     # Шаг 4 — вычисление итоговых рейтингов
     ratings = _calculate_ratings(global_matrix)
-
     # Шаг 5 — ранжирование альтернатив
     sorted_names, sorted_values = _sort_alternatives(
         ratings,
