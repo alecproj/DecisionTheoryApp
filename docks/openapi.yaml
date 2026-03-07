@@ -1,0 +1,435 @@
+openapi: 3.0.3
+info:
+  title: DecisionTheoryApp API
+  version: 1.0.0
+  description: API для запуска алгоритмов теории принятия решений и получения отчетов.
+
+servers:
+  - url: /api
+
+tags:
+  - name: Algorithms
+    description: Метаданные доступных алгоритмов
+  - name: Runs
+    description: Запуск алгоритмов
+  - name: Reports
+    description: Получение отчетов
+
+paths:
+  /algorithms:
+    get:
+      tags: [Algorithms]
+      summary: Получить список алгоритмов
+      description: Возвращает метаданные всех зарегистрированных алгоритмов.
+      operationId: getAlgorithms
+      responses:
+        '200':
+          description: Список алгоритмов успешно получен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlgorithmsListResponse'
+              examples:
+                success:
+                  value:
+                    algorithms:
+                      - id: ahp
+                        name: Метод анализа иерархий
+                        description: Описание метода анализа иерархий. 5 предложений.
+                        guide_link: /static/guides/ahp.md
+                        template_link: /static/templates/ahp.csv
+                      - id: asc
+                        name: Метод последовательный уступок
+                        description: Описание метода последовательных уступок. 5 предложений.
+                        guide_link: /static/guides/topsis.md
+                        template_link: /static/templates/topsis.csv
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /runs/{algorithm_id}:
+    post:
+      tags: [Runs]
+      summary: Запустить алгоритм
+      description: |
+        Запускает указанный алгоритм на основе загруженного CSV-файла
+        и создает запись о запуске/отчете.
+
+        Файл должен передаваться как `multipart/form-data`.
+      operationId: createRun
+      parameters:
+        - name: algorithm_id
+          in: path
+          required: true
+          description: Идентификатор алгоритма
+          schema:
+            type: string
+            example: ahp
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - report_name
+                - file
+              properties:
+                report_name:
+                  type: string
+                  description: Пользовательское имя отчета
+                  minLength: 1
+                  maxLength: 255
+                  example: Выбор ноутбука для учебы
+                file:
+                  type: string
+                  format: binary
+                  description: CSV-файл с входными данными
+            encoding:
+              file:
+                contentType: text/csv
+      responses:
+        '201':
+          description: Запуск успешно создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateRunResponse'
+              examples:
+                success:
+                  value:
+                    algorithm_id: ahp
+                    run_id: 67cdb4e8f9b2a9b7d6f12345
+                    report_name: Выбор ноутбука для учебы
+        '400':
+          description: Некорректный запрос или ошибка валидации входных данных
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                file_missing:
+                  value:
+                    error: Файл не передан
+                    code: FILE_MISSING
+                report_name_missing:
+                  value:
+                    error: Не передано имя отчета
+                    code: REPORT_NAME_MISSING
+                empty_filename:
+                  value:
+                    error: Файл не выбран
+                    code: FILE_NAME_EMPTY
+                invalid_extension:
+                  value:
+                    error: Неверный формат файла. Ожидается CSV
+                    code: INVALID_FILE_TYPE
+                empty_file:
+                  value:
+                    error: Файл пустой
+                    code: EMPTY_FILE
+                invalid_data:
+                  value:
+                    error: Некорректные данные в CSV
+                    code: VALIDATION_ERROR
+        '404':
+          description: Алгоритм не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                algorithm_not_found:
+                  value:
+                    error: Алгоритм 'ahp2' не найден
+                    code: ALGORITHM_NOT_FOUND
+        '422':
+          description: Ошибка в ходе решения
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                semantic_validation_error:
+                  value:
+                    error: Матрица попарных сравнений неконсистентна
+                    code: DOMAIN_VALIDATION_ERROR
+        '500':
+          description: Внутренняя ошибка сервера при запуске алгоритма
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /reports/{run_id}:
+    get:
+      tags: [Reports]
+      summary: Получить отчет по run_id
+      description: Возвращает отчет по выполненному запуску в формате Markdown.
+      operationId: getReportByRunId
+      parameters:
+        - name: run_id
+          in: path
+          required: true
+          description: Идентификатор запуска
+          schema:
+            type: string
+            example: 67cdb4e8f9b2a9b7d6f12345
+      responses:
+        '200':
+          description: Отчет успешно найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportResponse'
+              examples:
+                success:
+                  value:
+                    run_id: 67cdb4e8f9b2a9b7d6f12345
+                    report_name: Выбор ноутбука для учебы
+                    markdown: |
+                      # Отчет по методу AHP
+
+                      ## Исходные данные
+                      ...
+
+                      ## Результат
+                      Лучшей альтернативой является A1.
+        '400':
+          description: Некорректный формат run_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalid_run_id:
+                  value:
+                    error: Некорректный формат run_id
+                    code: INVALID_RUN_ID
+        '404':
+          description: Отчет не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                report_not_found:
+                  value:
+                    error: Отчёт не найден
+                    code: REPORT_NOT_FOUND
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /reports:
+    get:
+      tags: [Reports]
+      summary: Получить список отчетов
+      description: |
+        Возвращает список отчетов по выполненным задачам, отсортированный
+        от новых к старым.
+
+        По умолчанию возвращаются первые 50 отчетов.
+      operationId: listReports
+      parameters:
+        - name: page
+          in: query
+          required: false
+          description: Номер страницы, начиная с 1
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+            example: 1
+        - name: page_size
+          in: query
+          required: false
+          description: Количество отчетов на странице
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 50
+            example: 50
+      responses:
+        '200':
+          description: Список отчетов успешно получен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportsListResponse'
+              examples:
+                success:
+                  value:
+                    page: 1
+                    page_size: 50
+                    total: 132
+                    items:
+                      - run_id: 67cdb4e8f9b2a9b7d6f12345
+                        report_name: Выбор ноутбука для учебы
+                      - run_id: 67cdb450f9b2a9b7d6f12344
+                        report_name: Выбор поставщика
+        '400':
+          description: Некорректные параметры пагинации
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalid_page:
+                  value:
+                    error: Параметр page должен быть целым числом >= 1
+                    code: INVALID_PAGE
+                invalid_page_size:
+                  value:
+                    error: Параметр page_size должен быть целым числом от 1 до 50
+                    code: INVALID_PAGE_SIZE
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    AlgorithmMetadata:
+      type: object
+      required:
+        - id
+        - name
+        - description
+        - guide_link
+        - template_link
+      properties:
+        id:
+          type: string
+          description: Уникальный идентификатор алгоритма
+          example: ahp
+        name:
+          type: string
+          description: Человекочитаемое название алгоритма на русском языке.
+          example: Метод анализа иерархий
+        description:
+          type: string
+          description: Краткое описание алгоритма
+          example: Метод анализа иерархий для многокритериального выбора - это . 5 пердложений.
+        guide_link:
+          type: string
+          description: Ссылка на инструкцию по использованию алгоритма
+          example: /static/guides/ahp.md
+        template_link:
+          type: string
+          description: Ссылка на шаблон входного файла
+          example: /static/templates/ahp.csv
+
+    AlgorithmsListResponse:
+      type: object
+      required:
+        - algorithms
+      properties:
+        algorithms:
+          type: array
+          items:
+            $ref: '#/components/schemas/AlgorithmMetadata'
+
+    CreateRunResponse:
+      type: object
+      required:
+        - algorithm_id
+        - run_id
+        - report_name
+      properties:
+        algorithm_id:
+          type: string
+          description: Идентификатор алгоритма
+          example: ahp
+        run_id:
+          type: string
+          description: Идентификатор созданного запуска
+          example: 67cdb4e8f9b2a9b7d6f12345
+        report_name:
+          type: string
+          description: Пользовательское имя отчета
+          example: Выбор ноутбука для учебы
+
+    ReportResponse:
+      type: object
+      required:
+        - run_id
+        - report_name
+        - markdown
+      properties:
+        run_id:
+          type: string
+          description: Идентификатор запуска
+          example: 67cdb4e8f9b2a9b7d6f12345
+        report_name:
+          type: string
+          description: Имя отчета
+          example: Выбор ноутбука для учебы
+        markdown:
+          type: string
+          description: Содержимое отчета в формате Markdown
+          example: |
+            # Отчет
+            Результаты анализа...
+
+    ReportListItem:
+      type: object
+      required:
+        - run_id
+        - report_name
+      properties:
+        run_id:
+          type: string
+          description: Идентификатор запуска
+          example: 67cdb4e8f9b2a9b7d6f12345
+        report_name:
+          type: string
+          description: Имя отчета
+          example: Выбор ноутбука для учебы
+
+    ReportsListResponse:
+      type: object
+      required:
+        - page
+        - page_size
+        - total
+        - items
+      properties:
+        page:
+          type: integer
+          example: 1
+        page_size:
+          type: integer
+          example: 50
+        total:
+          type: integer
+          description: Общее количество отчетов
+          example: 132
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReportListItem'
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - code
+      properties:
+        error:
+          type: string
+          description: Человекочитаемое сообщение об ошибке
+          example: Отчёт не найден
+        code:
+          type: string
+          description: Машиночитаемый код ошибки
+          example: REPORT_NOT_FOUND
