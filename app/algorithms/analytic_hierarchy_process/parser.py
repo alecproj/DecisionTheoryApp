@@ -234,7 +234,7 @@ def parse_scores(rows: List[List[str]], criteria_names: List[str], data_row_star
     return scores
 
 def parse_sort_asc(rows: List[List[str]], criteria_names: List[str], data_row_start: int, criterias_cnt: int, alternatives_cnt: int):
-    sort_flags = [True]*criterias_cnt
+    sort_flags = [True] * criterias_cnt
     criteria_found = 0
     for i in range(data_row_start, len(rows)):
         if criteria_found >= criterias_cnt:
@@ -243,15 +243,17 @@ def parse_sort_asc(rows: List[List[str]], criteria_names: List[str], data_row_st
         crit_name_expected = criteria_names[criteria_found]
         if crit_name_expected in row:
             name_col = row.index(crit_name_expected)
-            # ищем последний непустой столбец справа
-            flag = None
-            for col in range(len(row)-1, name_col, -1):
-                if row[col].strip() != '':
-                    flag = row[col]
-                    break
-            if flag is not None and _is_number(flag):
-                sort_flags[criteria_found] = bool(int(_parse_number(flag)))
+            flag_col = name_col + 1 + alternatives_cnt  # строго после всех значений альтернатив
+            if flag_col >= len(row) or row[flag_col].strip() == '':
+                raise ValueError(f"Флага сортировки для критерия '{crit_name_expected}' нет")
+            flag = row[flag_col]
+            if flag.strip() not in ('0', '1'):
+                raise ValueError(f"Флаг сортировки для критерия '{crit_name_expected}' не является 0 или 1: '{flag}'")
+            sort_flags[criteria_found] = bool(int(_parse_number(flag)))
             criteria_found += 1
+    if criteria_found < criterias_cnt:
+        missing = criteria_names[criteria_found]
+        raise ValueError(f"Не все критерии найдены в таблице сортировки (найдено {criteria_found} из {criterias_cnt}, пропущен '{missing}')")
     return sort_flags
 
 def parse_alternative_table(rows: List[List[str]], criteria_names: List[str], criterias_cnt: int):

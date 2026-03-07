@@ -623,10 +623,10 @@ class TestParseSortAsc:
             parse_sort_asc(rows, ["ЦЕНА"], data_row_start=0,
                            criterias_cnt=1, alternatives_cnt=2)
 
-    #FIXED (ValueError added if flag non-numeric)
-    def test_raises_when_flag_is_non_numeric(self):
-        """При не числовом значении флага parse_sort_asc выдаёт ValueError."""
-        rows = [["ЦЕНА", "100", "200", "да"]]
+    #FIXED (ValueError added if flag is not zero or one)
+    def test_raises_when_flag_is_not_0_or_1(self):
+        """Флаг не равный нулю или один выкидывает ValueError."""
+        rows = [["ЦЕНА", "100", "200", "2"]]
         with pytest.raises(ValueError):
             parse_sort_asc(rows, ["ЦЕНА"], data_row_start=0,
                            criterias_cnt=1, alternatives_cnt=2)
