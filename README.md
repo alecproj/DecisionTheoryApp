@@ -54,6 +54,7 @@ DecisionTheoryApp/
     openapi.yaml            # Документация Api (Swagger OpenAPI)
 
   tests/                    # Автотесты
+    test_ahp_parser         # Тест парсера для AHP-алгоритма
     test_algorithms.py      # Тесты алгоритмов (input → отчёт)
     test_routes.py          # Тесты API роутов Flask
 
