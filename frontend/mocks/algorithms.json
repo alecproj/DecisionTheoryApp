@@ -1,8 +1,18 @@
 {
   "algorithms": [
-    { "id": "1", "name": "Метод анализа иерархий" },
-    { "id": "2", "name": "TestMethod1" },
-    { "id": "3", "name": "TestMethod2" },
-    { "id": "4", "name": "TestMethod3" }
+    {
+      "id": "example",
+      "name": "Метод анализа иерархий",
+      "description": "Краткое описание алгоритма метода анализа иерархий",
+      "guide_link": "https://example.com/guide",
+      "template_link": "https://example.com/template"
+    },
+    {
+      "id": "example",
+      "name": "Название алгоритма",
+      "description": "Краткое описание алгоритма.",
+      "guide_link": "https://example.com/guide",
+      "template_link": "https://example.com/template"
+    }
   ]
 }
