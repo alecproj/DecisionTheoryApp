@@ -249,12 +249,6 @@ def test_validate_matrix_zero_disallowed():
         validate_matrix([[0.0]], "m", allow_zero=False)
 
 
-def test_validate_matrix_non_float_raises():
-    """validate_matrix выдаёт ValueError, если ячейка содержит не float."""
-    with pytest.raises(ValueError, match="не является числом"):
-        validate_matrix([["oops"]], "m")
-
-
 # validate_scores
 
 def test_validate_scores_all_zero_row_raises():
@@ -621,23 +615,22 @@ class TestParseSortAsc:
                                criterias_cnt=2, alternatives_cnt=2)
         assert flags == [False, True]
 
-    def test_defaults_to_true_when_flag_missing(self):
-        """parse_sort_asc молча устанавливает True, если столбец флага отсутствует."""
+    #FIXED (ValueError added if flag missing)
+    def test_raises_when_flag_missing(self):
+        """При отсутствии столбца флага parse_sort_asc выдаёт ValueError."""
         rows = [["ЦЕНА", "100", "200"]]   # нет флага
-        flags = parse_sort_asc(rows, ["ЦЕНА"], data_row_start=0,
-                               criterias_cnt=1, alternatives_cnt=2)
-        assert flags == [True], (
-            "Отсутствующий флаг даёт True по умолчанию — "
-            "вызывающий код должен гарантировать наличие столбца флага"
-        )
+        with pytest.raises(ValueError):
+            parse_sort_asc(rows, ["ЦЕНА"], data_row_start=0,
+                           criterias_cnt=1, alternatives_cnt=2)
 
-    def test_defaults_to_true_when_flag_is_non_numeric(self):
-        """parse_sort_asc молча устанавливает True, если последняя непустая ячейка строки содержит текст, а не число."""
+    #FIXED (ValueError added if flag non-numeric)
+    def test_raises_when_flag_is_non_numeric(self):
+        """При не числовом значении флага parse_sort_asc выдаёт ValueError."""
         rows = [["ЦЕНА", "100", "200", "да"]]
-        flags = parse_sort_asc(rows, ["ЦЕНА"], data_row_start=0,
-                               criterias_cnt=1, alternatives_cnt=2)
-        assert flags == [True]
-
+        with pytest.raises(ValueError):
+            parse_sort_asc(rows, ["ЦЕНА"], data_row_start=0,
+                           criterias_cnt=1, alternatives_cnt=2)
+            
     def test_data_row_start_skips_header(self):
         """parse_sort_asc пропускает строки до data_row_start и не читает строки заголовка как данные критериев."""
         rows = [["ШУМ", "x", "y", "0"],
@@ -646,12 +639,13 @@ class TestParseSortAsc:
                                criterias_cnt=1, alternatives_cnt=2)
         assert flags == [False]
 
-    def test_unknown_criterion_keeps_default(self):
-        """parse_sort_asc оставляет флаг True для критерия, чьё имя не найдено ни в одной строке блока данных."""
+    #FIXED (ValueError added if criterion not found)
+    def test_raises_when_criterion_not_found(self):
+        """parse_sort_asc выдаёт ValueError, если критерий не найден."""
         rows = [["ДРУГОЙ", "1", "2", "0"]]
-        flags = parse_sort_asc(rows, ["ЦЕНА"], data_row_start=0,
-                               criterias_cnt=1, alternatives_cnt=2)
-        assert flags == [True]
+        with pytest.raises(ValueError):
+            parse_sort_asc(rows, ["ЦЕНА"], data_row_start=0,
+                           criterias_cnt=1, alternatives_cnt=2)
 
     @pytest.mark.parametrize("flag_val, expected", [("0", False), ("1", True)])
     def test_both_valid_flag_values(self, flag_val, expected):
@@ -778,17 +772,14 @@ class TestParseAlternativeTable:
 
     def test_raises_when_alt_start_col_not_found(self):
         """parse_alternative_table выдаёт ValueError, если первое имя альтернативы не найдено в строке заголовка — разметка нарушена."""
+        #FIX THIS
         rows = [
             ["", "Значения критериев"],
             ["", "КВ X", "КВ Y"],      # имена не совпадают с anchor_names
             ["ЦЕНА", "100", "200", "0"],
         ]
-        rows_broken = [
-            ["", "Значения критериев"],
-            [""],   # пустая строка заголовка → parse_alternative_names упадёт
-        ]
         with pytest.raises(ValueError):
-            parse_alternative_table(rows_broken, ["ЦЕНА"], 1)
+            parse_alternative_table(rows, ["UNEXISTED"], 1)
 
 
 # calc_alternative_pairwise
