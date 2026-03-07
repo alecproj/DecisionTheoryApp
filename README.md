@@ -50,7 +50,8 @@ DecisionTheoryApp/
 
     build/                  # Собранная версия фронта (публикуется на Pages)
 
-  docs/                     # Документация проекта (как запускать, как добавлять алгоритмы)
+  docs/                     # Документация проекта
+    openapi.yaml            # Документация Api (Swagger OpenAPI)
 
   tests/                    # Автотесты
     test_algorithms.py      # Тесты алгоритмов (input → отчёт)
@@ -179,5 +180,23 @@ pip install -e ".[dev]"
 
 ```sh
 pytest
+```
+
+---
+
+## Сборка документации
+
+### Документация API
+
+1. Из корня проекта:
+
+```sh
+docker run -p 8081:8080 -e SWAGGER_JSON=/docs/openapi.yaml -v $(pwd)/docs/openapi.yaml:/docs/openapi.yaml swaggerapi/swagger-ui
+```
+
+2. Открыть:
+
+```sh
+http://localhost:8001/
 ```
 
