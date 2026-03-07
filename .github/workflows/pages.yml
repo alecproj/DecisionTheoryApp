@@ -24,9 +24,15 @@ jobs:
       - name: Prepare build folder
         run: |
           rm -rf frontend/build
+          mkdir -p frontend/build
           mkdir -p frontend/build/mocks
+          mkdir -p frontend/build/docs
+
           cp -r frontend/src/* frontend/build/
           cp -r frontend/mocks/* frontend/build/mocks/
+
+          cp docks/openapi.yaml frontend/build/docs/openapi.yaml
+          cp docks/swagger.html frontend/build/docs/index.html
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
