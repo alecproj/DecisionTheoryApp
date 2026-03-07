@@ -79,7 +79,7 @@ body > * {
 ================================ */
 h1 {
   font-size: 2.2rem;
-  margin-bottom: 10px;
+  margin-bottom: 20px;
   font-weight: 600;
 }
 
@@ -211,4 +211,116 @@ a:hover {
   #input-form {
     padding: 20px;
   }
+}
+
+
+/* ===============================
+   📂 Drop zone
+================================ */
+#drop-zone {
+  margin-top: 10px;
+  padding: 28px;
+  border-radius: 14px;
+  border: 2px dashed var(--border);
+  background: rgba(30, 41, 59, 0.35);
+  color: var(--muted);
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  user-select: none;
+}
+
+#drop-zone:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+#drop-zone.dragover {
+  border-color: var(--accent);
+  background: rgba(39, 205, 227, 0.15);
+  color: var(--text);
+  box-shadow: 0 0 0 2px rgba(39, 205, 227, 0.25);
+}
+
+/* ===============================
+   📂 Кнопка выбора файла
+================================ */
+#file-button {
+  margin-top: 4px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(30, 41, 59, 0.6);
+  color: var(--text);
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  text-align: center;
+  user-select: none;
+}
+
+#file-button:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(39, 205, 227, 0.35);
+}
+
+#file-button:active {
+  transform: translateY(-1px) scale(0.98);
+}
+
+/* ===============================
+   📦 Карточка алгоритма
+================================ */
+
+#algorithm-card {
+  width: 100%;
+  max-width: 420px;
+  padding: 24px;
+  margin-bottom: 24px;
+
+  border-radius: 18px;
+  background: var(--card-bg);
+  backdrop-filter: blur(18px);
+  border: 1px solid var(--border);
+
+  box-shadow: 0 20px 50px rgba(0,0,0,0.45);
+}
+
+#algorithm-card h2 {
+  margin-bottom: 10px;
+}
+
+#algorithm-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+/* ===============================
+   🎬 Видео инструкция (на будущее)
+================================ */
+
+#guide-video {
+  margin-top: 16px;
+}
+
+#guide-video iframe {
+  width: 100%;
+  height: 220px;
+  border-radius: 12px;
+  border: none;
+}
+
+/* ===============================
+   🔒 Disabled кнопка
+================================ */
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
 }
