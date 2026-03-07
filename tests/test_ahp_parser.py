@@ -770,9 +770,9 @@ class TestParseAlternativeTable:
         with pytest.raises(ValueError):
             parse_alternative_table(rows, criteria, 1)
 
+    #FIXED (Теперь соответствует названию теста)
     def test_raises_when_alt_start_col_not_found(self):
         """parse_alternative_table выдаёт ValueError, если первое имя альтернативы не найдено в строке заголовка — разметка нарушена."""
-        #FIX THIS
         rows = [
             ["", "Значения критериев"],
             ["", "КВ X", "КВ Y"],      # имена не совпадают с anchor_names
