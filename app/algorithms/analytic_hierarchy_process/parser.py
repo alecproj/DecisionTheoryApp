@@ -249,7 +249,7 @@ def parse_sort_asc(rows: List[List[str]], criteria_names: List[str], data_row_st
             flag = row[flag_col]
             if flag.strip() not in ('0', '1'):
                 raise ValueError(f"Флаг сортировки для критерия '{crit_name_expected}' не является 0 или 1: '{flag}'")
-            sort_flags[criteria_found] = bool(int(_parse_number(flag)))
+            sort_flags[criteria_found] = flag.strip() == '1'
             criteria_found += 1
     if criteria_found < criterias_cnt:
         missing = criteria_names[criteria_found]
