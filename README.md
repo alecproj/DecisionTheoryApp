@@ -191,7 +191,7 @@ pytest
 1. Из корня проекта:
 
 ```sh
-docker run -p 8081:8080 -e SWAGGER_JSON=/docks/openapi.yaml -v $(pwd)/docks/openapi.yaml:/docks/openapi.yaml swaggerapi/swagger-ui
+docker run -p 8081:8080 -e SWAGGER_JSON=/docs/openapi.yaml -v $(pwd)/docs/openapi.yaml:/docs/openapi.yaml swaggerapi/swagger-ui
 ```
 
 2. Открыть:

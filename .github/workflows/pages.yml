@@ -31,8 +31,8 @@ jobs:
           cp -r frontend/src/* frontend/build/
           cp -r frontend/mocks/* frontend/build/mocks/
 
-          cp docks/openapi.yaml frontend/build/docs/openapi.yaml
-          cp docks/swagger.html frontend/build/docs/index.html
+          cp docs/openapi.yaml frontend/build/docs/openapi.yaml
+          cp docs/swagger.html frontend/build/docs/index.html
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
