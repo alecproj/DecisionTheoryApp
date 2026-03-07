@@ -2,30 +2,70 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <title>Decision Theory App — Algorithms</title>
-  <link rel="stylesheet" href="./css/index.css" />
+  <title>Decision Theory App — Input</title>
+  <link rel="stylesheet" href="./css/input.css" />
   <script src="./config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
-  <h1>Выбор алгоритма</h1>
-  <p id="mode-line" class="muted">Режим: <b id="mode"></b></p>
 
-  <ul id="algorithms">
-    <li>Загрузка...</li>
-  </ul>
-     
-  <script>
-    const mode = window.APP_MODE || "real";
-	  const modeEl = document.getElementById("mode");
-	  const lineEl = document.getElementById("mode-line");
-     
-   	if (modeEl) modeEl.textContent = mode;
-    
-	  // Показываем строку ТОЛЬКО в mock
-	  if (mode !== "mock" && lineEl) {
-	    lineEl.style.display = "none";
-	  }
-  </script>
-  <script src="./js/index.js"></script>
+  <h1>Ввод данных</h1>
+
+  <!-- ===============================
+       Информация об алгоритме
+  =============================== -->
+
+  <div id="algorithm-card">
+
+    <h2 id="algorithm-name">Загрузка...</h2>
+
+    <p id="algorithm-description" class="muted"></p>
+
+    <div id="algorithm-actions">
+      <a id="guide-link" target="_blank">
+        <button type="button">Инструкция</button>
+      </a>
+
+      <a id="template-link" download target="_blank">
+        <button type="button">Скачать шаблон</button>
+      </a>
+    </div>
+
+    <!-- заранее подготовлено место под видео -->
+    <div id="guide-video"></div>
+
+  </div>
+
+  <!-- ===============================
+       Форма загрузки
+  =============================== -->
+
+  <form id="input-form">
+
+   <label>
+     Файл данных
+     <input id="file-input" type="file" accept=".csv,.xlsx,.xls" required hidden />
+
+     <label for="file-input" id="file-button">
+        Выбрать файл
+     </label>
+   </label>
+
+   <div id="drop-zone">
+     Перетащите CSV или Excel файл сюда
+   </div>
+
+   <button id="run-button" type="submit" disabled>
+     Запустить
+   </button>
+
+  </form>
+
+  <p id="message" class="muted"></p>
+
+  <p><a href="./index.html">← назад</a></p>
+
+  <script src="./js/input.js"></script>
+
 </body>
 </html>
