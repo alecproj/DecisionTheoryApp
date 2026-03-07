@@ -8,29 +8,57 @@
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
+
   <h1>Ввод данных</h1>
-  <p>Алгоритм: <b id="algorithm-id"></b></p>
-  <p class="muted">
-     Скачать шаблон Excel:
-     <a href="./assets/templates/method_analyzing_hierarchies.xlsx" download>
-       method_analyzing_hierarchies.xlsx
-     </a>
-  </p>
+
+  <!-- ===============================
+       Информация об алгоритме
+  =============================== -->
+
+  <div id="algorithm-card">
+
+    <h2 id="algorithm-name">Загрузка...</h2>
+
+    <p id="algorithm-description" class="muted"></p>
+
+    <div id="algorithm-actions">
+      <a id="guide-link" target="_blank">
+        <button type="button">Инструкция</button>
+      </a>
+
+      <a id="template-link" download target="_blank">
+        <button type="button">Скачать шаблон</button>
+      </a>
+    </div>
+
+    <!-- заранее подготовлено место под видео -->
+    <div id="guide-video"></div>
+
+  </div>
+
+  <!-- ===============================
+       Форма загрузки
+  =============================== -->
+
   <form id="input-form">
+
    <label>
-     CSV файл
+     Файл данных
      <input id="file-input" type="file" accept=".csv,.xlsx,.xls" required hidden />
+
      <label for="file-input" id="file-button">
-        Выбрать CSV файл
+        Выбрать файл
      </label>
    </label>
 
-   <!-- Drop zone -->
    <div id="drop-zone">
-     Перетащите CSV файл сюда или нажмите для выбора
+     Перетащите CSV или Excel файл сюда
    </div>
 
-   <button type="submit">Запустить</button>
+   <button id="run-button" type="submit" disabled>
+     Запустить
+   </button>
+
   </form>
 
   <p id="message" class="muted"></p>
@@ -38,5 +66,6 @@
   <p><a href="./index.html">← назад</a></p>
 
   <script src="./js/input.js"></script>
+
 </body>
 </html>
