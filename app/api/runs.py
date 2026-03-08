@@ -36,8 +36,10 @@ def runs_create(algorithm_id: str):
     except KeyError:
         return {"error": f"Алгоритм '{algorithm_id}' не найден", "code": "ALGORITHM_NOT_FOUND"}, 404
 
+    file_content = file_bytes.decode("utf-8-sig")
+
     try:
-        typed_input = algo.validate(file_bytes)
+        typed_input = algo.validate(file_content)
     except ValueError as e:
         return {"error": str(e), "code": "VALIDATION_ERROR"}, 400
 
@@ -56,7 +58,7 @@ def runs_create(algorithm_id: str):
         "algorithm_id": algo.id,
         "run_id": run_id,
         "filename": file.filename,
-        "file": file_bytes.decode("utf-8-sig"),
+        "file": file_content,
         "created_at": now,
     })
 
