@@ -14,7 +14,7 @@ class AlgorithmMeta:
     description: str
     guide_link: str
     template_link: str
-    validate: Callable[[bytes], Any]
+    validate: Callable[[str], Any]
     run: Callable[[Any, Any], None]
 
 

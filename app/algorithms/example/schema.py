@@ -1,4 +1,5 @@
-import io, csv
+import io
+import csv
 from dataclasses import dataclass
 
 
@@ -8,9 +9,8 @@ class ExampleInput:
     b: float
 
 
-def validate_input(file_bytes: bytes) -> ExampleInput:
-    text = file_bytes.decode("utf-8-sig")
-    reader = csv.DictReader(io.StringIO(text))
+def validate_input(file_content: str) -> ExampleInput:
+    reader = csv.DictReader(io.StringIO(file_content))
     rows = list(reader)
     if not rows:
         raise ValueError("CSV файл не содержит данных")
