@@ -4,7 +4,7 @@ from flask import Blueprint, request
 
 from app.algorithms.registry import get_algorithm
 from app.reporting.reporter import MarkdownReporter
-from app.db.mongo import runs_col, reports_col
+from app.db.mongo import inputs_col, reports_col
 
 bp = Blueprint("runs_api", __name__, url_prefix="/api")
 
@@ -50,16 +50,18 @@ def runs_create(algorithm_id: str):
         return {"error": str(e), "code": "DOMAIN_VALIDATION_ERROR"}, 422
 
     now = datetime.now(timezone.utc)
+    run_id = ObjectId()
 
-    run_id = runs_col().insert_one({
+    inputs_col().insert_one({
         "algorithm_id": algo.id,
-        "algorithm_name": algo.name,
-        "report_name": report_name,
+        "run_id": run_id,
         "filename": file.filename,
+        "file": file_bytes.decode("utf-8-sig"),
         "created_at": now,
-    }).inserted_id
+    })
 
     reports_col().insert_one({
+        "algorithm_id": algo.id,
         "run_id": run_id,
         "report_name": report_name,
         "markdown": md,
