@@ -8,6 +8,7 @@ dependencies = [
   "pymongo>=4.7.0",
   "gunicorn>=22.0.0",
   "markdown>=3.6",
+  "numpy>=2.4.3"
 ]
 
 [project.optional-dependencies]

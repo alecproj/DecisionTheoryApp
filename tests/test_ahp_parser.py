@@ -252,19 +252,21 @@ def test_validate_matrix_zero_disallowed():
 # validate_scores
 
 def test_validate_scores_all_zero_row_raises():
-    """validate_scores выдаёт ValueError, если строка критерия полностью нулевая — такие оценки делают вычисление отношений невозможным."""
-    with pytest.raises(ValueError, match="нулевая"):
+    """validate_scores выдаёт ValueError на первом нулевом элементе."""
+    with pytest.raises(ValueError, match="[Нн]улев"):
         validate_scores([[0.0, 0.0, 0.0], [1.0, 2.0, 3.0]], 2)
 
 
 def test_validate_scores_negatives_allowed():
-    """validate_scores принимает отрицательные оценки — они допустимы для критериев типа «чем меньше, тем лучше»."""
-    validate_scores([[-5.0, -10.0, -3.0]], 1)
+    """validate_scores выдаёт ValueError для отрицательных оценок."""
+    with pytest.raises(ValueError, match="Отрицательное"):
+        validate_scores([[-5.0, -10.0, -3.0]], 1)
 
 
 def test_validate_scores_partial_zeros_ok():
-    """validate_scores принимает строку с частичными нулями, если хотя бы одно значение ненулевое."""
-    validate_scores([[0.0, 1.0, 2.0]], 1)
+    """validate_scores выдаёт ValueError на первом нулевом значении даже если остальные элементы строки ненулевые."""
+    with pytest.raises(ValueError, match="[Нн]улев"):
+        validate_scores([[0.0, 1.0, 2.0]], 1)
 
 
 # normalize_and_validate_pairwise

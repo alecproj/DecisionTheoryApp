@@ -624,3 +624,9 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# Python - specific files (tests/utilities)
+ahp_reporter.py
+test_parse.py
+ztest_ahp.py
+ztest_parse.py

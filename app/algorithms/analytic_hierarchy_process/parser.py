@@ -77,7 +77,7 @@ def validate_matrix(matrix: List[List[float]], name: str, allow_zero: bool = Tru
                 raise ValueError(f"Нулевое значение в матрице {name} [{i}][{j}], где не ожидалось: {val}")
 
 def validate_scores(scores: List[List[float]], criterias_cnt: int):
-    validate_matrix(scores, "scores", allow_zero=True, allow_negative=True)
+    validate_matrix(scores, "scores", allow_zero=False, allow_negative=False)
     for i in range(criterias_cnt):
         if all(v == 0 for v in scores[i]):
             raise ValueError(f"Строка {i} в scores полностью нулевая")
@@ -243,18 +243,33 @@ def parse_sort_asc(rows: List[List[str]], criteria_names: List[str], data_row_st
         crit_name_expected = criteria_names[criteria_found]
         if crit_name_expected in row:
             name_col = row.index(crit_name_expected)
-            flag_col = name_col + 1 + alternatives_cnt  # строго после всех значений альтернатив
-            if flag_col >= len(row) or row[flag_col].strip() == '':
-                raise ValueError(f"Флага сортировки для критерия '{crit_name_expected}' нет")
-            flag = row[flag_col]
-            if flag.strip() not in ('0', '1'):
-                raise ValueError(f"Флаг сортировки для критерия '{crit_name_expected}' не является 0 или 1: '{flag}'")
-            sort_flags[criteria_found] = flag.strip() == '1'
+            # где начинается поиск флага
+            search_start = name_col + 1 + alternatives_cnt
+            flag = None
+            # ищем первую непустую ячейку справа
+            for j in range(search_start, len(row)):
+                cell = row[j].strip()
+                if cell != "":
+                    flag = cell
+                    break
+            if flag is None:
+                raise ValueError(
+                    f"Флага сортировки для критерия '{crit_name_expected}' нет"
+                )
+            if flag not in ('0', '1'):
+                raise ValueError(
+                    f"Флаг сортировки для критерия '{crit_name_expected}' не является 0 или 1: '{flag}'"
+                )
+            sort_flags[criteria_found] = flag == '1'
             criteria_found += 1
     if criteria_found < criterias_cnt:
         missing = criteria_names[criteria_found]
-        raise ValueError(f"Не все критерии найдены в таблице сортировки (найдено {criteria_found} из {criterias_cnt}, пропущен '{missing}')")
+        raise ValueError(
+            f"Не все критерии найдены в таблице сортировки "
+            f"(найдено {criteria_found} из {criterias_cnt}, пропущен '{missing}')"
+        )
     return sort_flags
+
 
 def parse_alternative_table(rows: List[List[str]], criteria_names: List[str], criterias_cnt: int):
     alternative_names = parse_alternative_names(rows)
@@ -296,6 +311,12 @@ def calc_alternative_pairwise(scores, sort_flags):
             for b in range(alternatives_cnt):
                 if a == b:
                     continue
+                divisor = scores[i][a] if sort_flags[i] else scores[i][b]
+                if divisor == 0:
+                    raise ValueError(
+                        f"Деление на ноль при построении матрицы альтернатив: "
+                        f"критерий {i}, альтернатива {a if sort_flags[i] else b}"
+                    )
                 matrix[a][b] = scores[i][b]/scores[i][a] if sort_flags[i] else scores[i][a]/scores[i][b]
         result.append(matrix)
     return result

@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import List, Optional
 from dataclasses import dataclass
 from .parser import (
     read_csv,
@@ -18,34 +18,23 @@ class AHPInput:
     alternative_pairwise: Optional[List[List[List[float]]]] = None
 
 
-def validator(input_data: Dict[str, Any]) -> AHPInput:
+def validator(input_data: str) -> AHPInput:
     """
     Точка входа.
     Получает CSV, полностью валидирует и возвращает AHPInput.
     """
 
     # --------------------------------------------------
-    # 1. Проверка входа
-    # --------------------------------------------------
-
-    if "csv" not in input_data:
-        raise ValueError("Обязательное поле: csv")
-
-    csv_text = str(input_data["csv"]).strip()
-    if not csv_text:
-        raise ValueError("CSV пустой")
-
-    # --------------------------------------------------
-    # 2. Чтение CSV
+    # 1. Чтение CSV
     # --------------------------------------------------
 
     try:
-        rows = read_csv(csv_text)
+        rows = read_csv(input_data)
     except Exception as e:
         raise ValueError(f"Ошибка чтения CSV: {e}")
 
     # --------------------------------------------------
-    # 3. Проверка шаблона
+    # 2. Проверка шаблона
     # --------------------------------------------------
 
     try:
@@ -54,7 +43,7 @@ def validator(input_data: Dict[str, Any]) -> AHPInput:
         raise ValueError(f"Неверный шаблон CSV: {e}")
 
     # --------------------------------------------------
-    # 4. Парсинг критериев
+    # 3. Парсинг критериев
     # --------------------------------------------------
 
     try:
@@ -64,7 +53,7 @@ def validator(input_data: Dict[str, Any]) -> AHPInput:
         raise ValueError(f"Ошибка парсинга критериев: {e}")
 
     # --------------------------------------------------
-    # 5. Парсинг альтернатив
+    # 4. Парсинг альтернатив
     # --------------------------------------------------
 
     try:
@@ -82,7 +71,7 @@ def validator(input_data: Dict[str, Any]) -> AHPInput:
         raise ValueError(f"Ошибка парсинга альтернатив: {e}")
 
     # --------------------------------------------------
-    # 6. Генерация матриц альтернатив
+    # 5. Генерация матриц альтернатив
     # --------------------------------------------------
 
     try:
@@ -94,7 +83,7 @@ def validator(input_data: Dict[str, Any]) -> AHPInput:
         raise ValueError(f"Ошибка генерации альтернативных матриц: {e}")
 
     # --------------------------------------------------
-    # 7. Финальная согласованность размеров
+    # 6. Финальная согласованность размеров
     # --------------------------------------------------
 
     if criterias_cnt != len(alternative_pairwise):
@@ -104,7 +93,7 @@ def validator(input_data: Dict[str, Any]) -> AHPInput:
         )
 
     # --------------------------------------------------
-    # 8. Возврат модели
+    # 7. Возврат модели
     # --------------------------------------------------
 
     return AHPInput(
