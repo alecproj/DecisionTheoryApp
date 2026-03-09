@@ -11,7 +11,11 @@ const API_BASE = window.API_BASE || "";
 
 async function getJSON(url) {
   const r = await fetch(url);
-  if (!r.ok) throw new Error(`HTTP ${r.status}: ${url}`);
+
+  if (!r.ok) {
+    throw new Error(`HTTP ${r.status}: ${url}`);
+  }
+
   return await r.json();
 }
 
@@ -20,6 +24,7 @@ async function getJSON(url) {
 // ================================
 
 async function fetchAlgorithms() {
+
   if (MODE === "mock") {
     return await getJSON("./mocks/algorithms.json");
   }
@@ -44,11 +49,16 @@ function renderAlgorithm(a) {
   if (nameEl) nameEl.textContent = a.name;
   if (descEl) descEl.textContent = a.description;
 
-  if (guideEl) guideEl.href = a.guide_link;
-  if (templateEl) templateEl.href = a.template_link;
+  if (guideEl && a.guide_link) {
+    guideEl.href = `${API_BASE}${a.guide_link}`;
+  }
+
+  if (templateEl && a.template_link) {
+    templateEl.href = `${API_BASE}${a.template_link}`;
+  }
 
   // ================================
-  // 🎬 Автовстраивание YouTube
+  // 🎬 YouTube авто-встраивание
   // ================================
 
   if (videoEl && a.guide_link && a.guide_link.includes("youtube")) {
@@ -103,7 +113,7 @@ async function fileToCSV(file) {
 // 🚀 Создание run
 // ================================
 
-async function createRunWithFile(algorithm_id, file) {
+async function createRunWithFile(algorithm_id, report_name, file) {
 
   if (MODE === "mock") {
     return await getJSON("./mocks/run_created.json");
@@ -111,10 +121,10 @@ async function createRunWithFile(algorithm_id, file) {
 
   const formData = new FormData();
 
-  formData.append("algorithm_id", algorithm_id);
+  formData.append("report_name", report_name);
   formData.append("file", file);
 
-  const r = await fetch(`${API_BASE}/api/runs`, {
+  const r = await fetch(`${API_BASE}/api/runs/${algorithm_id}`, {
     method: "POST",
     body: formData,
   });
@@ -138,7 +148,9 @@ async function initInput() {
   const form = document.getElementById("input-form");
   if (!form) return;
 
+  const reportNameInput = document.getElementById("report-name");
   const fileInput = document.getElementById("file-input");
+
   const dropZone = document.getElementById("drop-zone");
   const runButton = document.getElementById("run-button");
 
@@ -173,10 +185,24 @@ async function initInput() {
   }
 
   // ================================
+  // 🔘 Обновление кнопки запуска
+  // ================================
+
+  function updateRunButton() {
+
+    const hasFile = !!selectedFile;
+    const hasName = reportNameInput.value.trim().length > 0;
+
+    runButton.disabled = !(hasFile && hasName);
+  }
+
+  // ================================
   // 📂 Click по Drop zone
   // ================================
 
-  dropZone.addEventListener("click", () => fileInput.click());
+  dropZone.addEventListener("click", () => {
+    fileInput.click();
+  });
 
   // ================================
   // 📂 Выбор файла
@@ -187,11 +213,10 @@ async function initInput() {
     selectedFile = fileInput.files[0];
 
     if (selectedFile) {
-
       dropZone.textContent = `Выбран файл: ${selectedFile.name}`;
-
-      runButton.disabled = false;
     }
+
+    updateRunButton();
   });
 
   // ================================
@@ -227,7 +252,6 @@ async function initInput() {
     ) {
 
       alert("Нужен CSV или Excel файл");
-
       return;
     }
 
@@ -237,11 +261,17 @@ async function initInput() {
 
     dropZone.textContent = `Выбран файл: ${file.name}`;
 
-    runButton.disabled = false;
+    updateRunButton();
   });
 
   // ================================
-  // 🚀 Submit
+  // ✏️ Ввод имени отчета
+  // ================================
+
+  reportNameInput.addEventListener("input", updateRunButton);
+
+  // ================================
+  // 🚀 Submit формы
   // ================================
 
   form.addEventListener("submit", async (ev) => {
@@ -256,6 +286,16 @@ async function initInput() {
       return;
     }
 
+    const report_name = reportNameInput.value.trim();
+
+    if (!report_name) {
+
+      message.textContent = "Введите имя отчета";
+      message.className = "error";
+
+      return;
+    }
+
     message.textContent = "Загружаю...";
     message.className = "";
 
@@ -263,7 +303,11 @@ async function initInput() {
 
       const csvFile = await fileToCSV(selectedFile);
 
-      const run = await createRunWithFile(algId, csvFile);
+      const run = await createRunWithFile(
+        algId,
+        report_name,
+        csvFile
+      );
 
       localStorage.setItem("run_id", run.run_id);
 
@@ -278,7 +322,7 @@ async function initInput() {
 }
 
 // ================================
-// 🚀 Авто запуск
+// 🚀 Автозапуск
 // ================================
 
 initInput();
