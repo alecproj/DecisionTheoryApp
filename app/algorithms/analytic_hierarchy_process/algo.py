@@ -4,10 +4,23 @@ import numpy as np
 from schema import AHPInput
 
 def calculate_priorities(matrix: List[List[float]]) -> np.ndarray:
-    mat = np.array(matrix)
+    mat = np.array(matrix, dtype=float)
+
+    if mat.ndim != 2 or mat.shape[0] != mat.shape[1]:
+        raise ValueError(f"Матрица должна быть квадратной, получено: {mat.shape}")
+    if np.any(mat <= 0):
+        raise ValueError("Все элементы матрицы должны быть строго положительными")
+
     eigenvalues, eigenvectors = np.linalg.eig(mat)
     max_index = np.argmax(np.real(eigenvalues))
-    priorities = np.real(eigenvectors[:, max_index])
+    raw_vector = eigenvectors[:, max_index]
+
+    if np.max(np.abs(np.imag(raw_vector))) > 1e-6:
+        raise ValueError(
+            "Собственный вектор содержит значимую мнимую часть — матрица некорректна"
+        )
+
+    priorities = np.real(raw_vector)
     priorities = np.abs(priorities)
     priorities /= priorities.sum()
     return priorities
