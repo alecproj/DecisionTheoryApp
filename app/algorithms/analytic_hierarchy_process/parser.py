@@ -77,7 +77,7 @@ def validate_matrix(matrix: List[List[float]], name: str, allow_zero: bool = Tru
                 raise ValueError(f"Нулевое значение в матрице {name} [{i}][{j}], где не ожидалось: {val}")
 
 def validate_scores(scores: List[List[float]], criterias_cnt: int):
-    validate_matrix(scores, "scores", allow_zero=True, allow_negative=True)
+    validate_matrix(scores, "scores", allow_zero=False, allow_negative=False)
     for i in range(criterias_cnt):
         if all(v == 0 for v in scores[i]):
             raise ValueError(f"Строка {i} в scores полностью нулевая")
@@ -311,6 +311,12 @@ def calc_alternative_pairwise(scores, sort_flags):
             for b in range(alternatives_cnt):
                 if a == b:
                     continue
+                divisor = scores[i][a] if sort_flags[i] else scores[i][b]
+                if divisor == 0:
+                    raise ValueError(
+                        f"Деление на ноль при построении матрицы альтернатив: "
+                        f"критерий {i}, альтернатива {a if sort_flags[i] else b}"
+                    )
                 matrix[a][b] = scores[i][b]/scores[i][a] if sort_flags[i] else scores[i][a]/scores[i][b]
         result.append(matrix)
     return result
