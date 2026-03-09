@@ -1,22 +1,77 @@
+from datetime import datetime, timezone
+from bson import ObjectId
 from flask import Blueprint, request
-from app.services.run_service import create_run
+
+from app.algorithms.registry import get_algorithm
+from app.reporting.reporter import MarkdownReporter
+from app.db.mongo import inputs_col, reports_col
 
 bp = Blueprint("runs_api", __name__, url_prefix="/api")
 
-@bp.post("/runs")
-def runs_create():
-    data = request.get_json(force=True) or {}
-    algorithm_id = data.get("algorithm_id")
-    input_data = data.get("input", {})
 
-    if not algorithm_id:
-        return {"error": "algorithm_id is required"}, 400
+@bp.post("/runs/<algorithm_id>")
+def runs_create(algorithm_id: str):
+    report_name = request.form.get("report_name", "").strip()
+    if not report_name:
+        return {"error": "Не передано имя отчета", "code": "REPORT_NAME_MISSING"}, 400
+
+    if "file" not in request.files:
+        return {"error": "Файл не передан", "code": "FILE_MISSING"}, 400
+
+    file = request.files["file"]
+
+    if file.filename == "":
+        return {"error": "Файл не выбран", "code": "FILE_MISSING"}, 400
+
+    if not file.filename.endswith(".csv"):
+        return {"error": "Неверный формат файла. Ожидается CSV", "code": "INVALID_FILE_FORMAT"}, 400
+
+    file_bytes = file.read()
+
+    if not file_bytes:
+        return {"error": "Файл пустой", "code": "FILE_EMPTY"}, 400
 
     try:
-        run_id = create_run(algorithm_id, input_data)
-    except KeyError as e:
-        return {"error": str(e)}, 404
-    except ValueError as e:
-        return {"error": str(e)}, 400
+        algo = get_algorithm(algorithm_id)
+    except KeyError:
+        return {"error": f"Алгоритм '{algorithm_id}' не найден", "code": "ALGORITHM_NOT_FOUND"}, 404
 
-    return {"run_id": run_id}
+    file_content = file_bytes.decode("utf-8-sig")
+
+    try:
+        typed_input = algo.validate(file_content)
+    except ValueError as e:
+        return {"error": str(e), "code": "VALIDATION_ERROR"}, 400
+
+    try:
+        reporter = MarkdownReporter()
+        reporter.h1(report_name)
+        algo.run(typed_input, reporter)
+        md = reporter.get_markdown()
+    except Exception as e:
+        return {"error": str(e), "code": "DOMAIN_VALIDATION_ERROR"}, 422
+
+    now = datetime.now(timezone.utc)
+    run_id = ObjectId()
+
+    inputs_col().insert_one({
+        "algorithm_id": algo.id,
+        "run_id": run_id,
+        "filename": file.filename,
+        "file": file_content,
+        "created_at": now,
+    })
+
+    reports_col().insert_one({
+        "algorithm_id": algo.id,
+        "run_id": run_id,
+        "report_name": report_name,
+        "markdown": md,
+        "created_at": now,
+    })
+
+    return {
+        "algorithm_id": algorithm_id,
+        "run_id": str(run_id),
+        "report_name": report_name,
+    }, 201
