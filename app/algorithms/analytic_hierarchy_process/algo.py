@@ -1,8 +1,32 @@
 from app.algorithms.example.schema import ExampleInput
-
+from typing import List, Tuple
 import numpy as np
 from schema import AHPInput
-from ahp import calculate_priorities, calculate_consistency
+
+def calculate_priorities(matrix: List[List[float]]) -> np.ndarray:
+    mat = np.array(matrix)
+    eigenvalues, eigenvectors = np.linalg.eig(mat)
+    max_index = np.argmax(np.real(eigenvalues))
+    priorities = np.real(eigenvectors[:, max_index])
+    priorities = np.abs(priorities)
+    priorities /= priorities.sum()
+    return priorities
+
+def calculate_consistency(matrix: List[List[float]],
+                          priorities: np.ndarray) -> Tuple[float, float]:
+    n = len(matrix)
+    mat = np.array(matrix)
+    lambda_max = np.real(np.dot(mat, priorities) / priorities).mean()
+    CI = (lambda_max - n) / (n - 1) if n > 1 else 0.0
+    RI_TABLE = [
+        0, 0, 0.58, 0.9, 1.12, 1.24, 1.32, 1.41,
+        1.45, 1.49, 1.51, 1.48, 1.56, 1.57,
+        1.59, 1.6, 1.61, 1.62, 1.63, 1.64
+    ]
+    RI = RI_TABLE[n - 1] if n <= len(RI_TABLE) else 1.64
+    CR = CI / RI if RI != 0 else 0.0
+    return CI, CR
+
 
 def run(input_data: AHPInput, reporter) -> None:
 
