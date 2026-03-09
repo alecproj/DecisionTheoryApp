@@ -1,6 +1,6 @@
 from typing import List, Tuple
 import numpy as np
-from schema import AHPInput
+from .schema import AHPInput
 
 def calculate_priorities(matrix: List[List[float]]) -> np.ndarray:
     mat = np.array(matrix, dtype=float)
@@ -78,7 +78,7 @@ def run(input_data: AHPInput, reporter) -> None:
     # --------------------------------------------------
     # 3. Проверка согласованности
     # --------------------------------------------------
-    
+
     reporter.h2("Оценка согласованности")
 
     # calculate_consistency возвращает (CI, CR)
