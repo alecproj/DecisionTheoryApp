@@ -1,4 +1,3 @@
-from app.algorithms.example.schema import ExampleInput
 from typing import List, Tuple
 import numpy as np
 from schema import AHPInput
