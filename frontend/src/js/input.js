@@ -6,14 +6,15 @@ const MODE = window.APP_MODE || "real";
 const API_BASE = window.API_BASE || "";
 
 // ================================
-// 🌐 Утилита fetch JSON
+// 🌐 Fetch JSON
 // ================================
 
 async function getJSON(url) {
+
   const r = await fetch(url);
 
   if (!r.ok) {
-    throw new Error(`HTTP ${r.status}: ${url}`);
+    throw new Error(`HTTP ${r.status}`);
   }
 
   return await r.json();
@@ -29,7 +30,7 @@ async function fetchAlgorithms() {
     return await getJSON("./mocks/algorithms.json");
   }
 
-  return await getJSON(`${API_BASE}/api/algorithms`);
+  return await getJSON(`${API_BASE}/algorithms`);
 }
 
 // ================================
@@ -38,29 +39,22 @@ async function fetchAlgorithms() {
 
 function renderAlgorithm(a) {
 
-  const nameEl = document.getElementById("algorithm-name");
-  const descEl = document.getElementById("algorithm-description");
+  document.getElementById("algorithm-name").textContent = a.name;
+  document.getElementById("algorithm-description").textContent = a.description;
 
   const guideEl = document.getElementById("guide-link");
   const templateEl = document.getElementById("template-link");
-
   const videoEl = document.getElementById("guide-video");
 
-  if (nameEl) nameEl.textContent = a.name;
-  if (descEl) descEl.textContent = a.description;
-
-  if (guideEl && a.guide_link) {
+  if (a.guide_link) {
     guideEl.href = `${API_BASE}${a.guide_link}`;
   }
 
-  if (templateEl && a.template_link) {
+  if (a.template_link) {
     templateEl.href = `${API_BASE}${a.template_link}`;
   }
 
-  // ================================
-  // 🎬 YouTube авто-встраивание
-  // ================================
-
+  // YouTube embed
   if (videoEl && a.guide_link && a.guide_link.includes("youtube")) {
 
     const embed = a.guide_link
@@ -68,10 +62,7 @@ function renderAlgorithm(a) {
       .replace("youtu.be/", "youtube.com/embed/");
 
     videoEl.innerHTML = `
-      <iframe
-        src="${embed}"
-        allowfullscreen>
-      </iframe>
+      <iframe src="${embed}" allowfullscreen></iframe>
     `;
   }
 }
@@ -94,10 +85,9 @@ async function fileToCSV(file) {
 
     const workbook = XLSX.read(data);
 
-    const sheetName = workbook.SheetNames[0];
-    const worksheet = workbook.Sheets[sheetName];
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
 
-    const csv = XLSX.utils.sheet_to_csv(worksheet);
+    const csv = XLSX.utils.sheet_to_csv(sheet);
 
     return new File(
       [csv],
@@ -116,7 +106,14 @@ async function fileToCSV(file) {
 async function createRunWithFile(algorithm_id, report_name, file) {
 
   if (MODE === "mock") {
-    return await getJSON("./mocks/run_created.json");
+
+    const mock = await getJSON("./mocks/run_created.json");
+
+    return {
+      ...mock,
+      algorithm_id,
+      report_name
+    };
   }
 
   const formData = new FormData();
@@ -124,16 +121,20 @@ async function createRunWithFile(algorithm_id, report_name, file) {
   formData.append("report_name", report_name);
   formData.append("file", file);
 
-  const r = await fetch(`${API_BASE}/api/runs/${algorithm_id}`, {
+  const r = await fetch(`${API_BASE}/runs/${algorithm_id}`, {
     method: "POST",
-    body: formData,
+    body: formData
   });
 
-  if (!r.ok) {
+  if (r.status !== 201) {
 
     const body = await r.json().catch(() => ({}));
 
-    throw new Error(body.error || `HTTP ${r.status}`);
+    throw new Error(
+      body.error
+        ? `${body.error} (${body.code})`
+        : `HTTP ${r.status}`
+    );
   }
 
   return await r.json();
@@ -156,7 +157,7 @@ async function initInput() {
 
   const message = document.getElementById("message");
 
-  const algId = localStorage.getItem("algorithm_id") || "example";
+  const algId = localStorage.getItem("algorithm_id") || "ahp";
 
   let selectedFile = null;
 
@@ -167,37 +168,33 @@ async function initInput() {
   try {
 
     const data = await fetchAlgorithms();
-    const algorithms = data.algorithms || [];
 
-    const algorithm = algorithms.find(a => a.id === algId);
+    const algorithm = data.algorithms.find(a => a.id === algId);
 
     if (algorithm) {
       renderAlgorithm(algorithm);
     }
 
-  } catch (e) {
+  } catch {
 
-    const nameEl = document.getElementById("algorithm-name");
-
-    if (nameEl) {
-      nameEl.textContent = "Ошибка загрузки алгоритма";
-    }
+    document.getElementById("algorithm-name").textContent =
+      "Ошибка загрузки алгоритма";
   }
 
   // ================================
-  // 🔘 Обновление кнопки запуска
+  // 🔘 Кнопка запуска
   // ================================
 
   function updateRunButton() {
 
-    const hasFile = !!selectedFile;
     const hasName = reportNameInput.value.trim().length > 0;
+    const hasFile = !!selectedFile;
 
-    runButton.disabled = !(hasFile && hasName);
+    runButton.disabled = !(hasName && hasFile);
   }
 
   // ================================
-  // 📂 Click по Drop zone
+  // 📂 click по зоне
   // ================================
 
   dropZone.addEventListener("click", () => {
@@ -205,7 +202,7 @@ async function initInput() {
   });
 
   // ================================
-  // 📂 Выбор файла
+  // 📂 выбор файла
   // ================================
 
   fileInput.addEventListener("change", () => {
@@ -224,20 +221,17 @@ async function initInput() {
   // ================================
 
   dropZone.addEventListener("dragover", (e) => {
-
     e.preventDefault();
     dropZone.classList.add("dragover");
   });
 
   dropZone.addEventListener("dragleave", () => {
-
     dropZone.classList.remove("dragover");
   });
 
   dropZone.addEventListener("drop", (e) => {
 
     e.preventDefault();
-
     dropZone.classList.remove("dragover");
 
     const file = e.dataTransfer.files[0];
@@ -245,18 +239,15 @@ async function initInput() {
 
     const name = file.name.toLowerCase();
 
-    if (
-      !name.endsWith(".csv") &&
-      !name.endsWith(".xlsx") &&
-      !name.endsWith(".xls")
-    ) {
+    if (!name.endsWith(".csv") &&
+        !name.endsWith(".xlsx") &&
+        !name.endsWith(".xls")) {
 
       alert("Нужен CSV или Excel файл");
       return;
     }
 
     selectedFile = file;
-
     fileInput.files = e.dataTransfer.files;
 
     dropZone.textContent = `Выбран файл: ${file.name}`;
@@ -265,24 +256,30 @@ async function initInput() {
   });
 
   // ================================
-  // ✏️ Ввод имени отчета
+  // ✏️ имя отчета
   // ================================
 
   reportNameInput.addEventListener("input", updateRunButton);
 
   // ================================
-  // 🚀 Submit формы
+  // 🚀 submit
   // ================================
 
-  form.addEventListener("submit", async (ev) => {
+  form.addEventListener("submit", async (e) => {
 
-    ev.preventDefault();
+    e.preventDefault();
 
     if (!selectedFile) {
 
       message.textContent = "Выберите файл";
       message.className = "error";
+      return;
+    }
 
+    if (selectedFile.size === 0) {
+
+      message.textContent = "Файл пустой";
+      message.className = "error";
       return;
     }
 
@@ -292,11 +289,10 @@ async function initInput() {
 
       message.textContent = "Введите имя отчета";
       message.className = "error";
-
       return;
     }
 
-    message.textContent = "Загружаю...";
+    message.textContent = "Загрузка...";
     message.className = "";
 
     try {
@@ -322,7 +318,7 @@ async function initInput() {
 }
 
 // ================================
-// 🚀 Автозапуск
+// 🚀 Старт
 // ================================
 
 initInput();
