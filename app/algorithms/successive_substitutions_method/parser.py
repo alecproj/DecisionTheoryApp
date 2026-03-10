@@ -1,7 +1,28 @@
 import csv
 import math
+import re
+from dataclasses import dataclass
 from io import StringIO
 from typing import List, Optional, Tuple
+from sympy import symbols, sympify, SympifyError
+
+
+# ==========================================================
+# СТРУКТУРЫ СЫРЫХ ДАННЫХ
+# ==========================================================
+
+@dataclass
+class RawTargetFunction:
+    function_str: str
+    right_part_str: str
+    is_max_str: str
+    concession_str: str
+
+@dataclass
+class RawConstraintFunction:
+    function_str: str
+    sign_str: str
+    right_part_str: str
 
 # ==========================================================
 # БАЗОВЫЕ УТИЛИТЫ
@@ -26,6 +47,17 @@ def _parse_number(s: str) -> float:
     except ValueError:
         raise ValueError(f"Некорректное число: '{s}'")
 
+def _normalize_function_str(expr: str) -> str:
+    """
+    Приводит строку вида '2x1+x2-3x3' к виду '2*x1+x2-3*x3',
+    понятному для sympy.
+    """
+    return re.sub(r'(\d)(x)', r'\1*\2', expr)
+
+# ==========================================================
+# ЧТЕНИЕ CSV
+# ==========================================================
+
 def read_csv(csv_text: str) -> List[List[str]]:
     f = StringIO(csv_text.strip())
     reader = csv.reader(f, delimiter=';')
@@ -36,8 +68,9 @@ def read_csv(csv_text: str) -> List[List[str]]:
     return rows
 
 # ==========================================================
-# ВАЛИДАЦИЯ
+# ВАЛИДАЦИЯ ШАБЛОНА И РАЗМЕРОВ
 # ==========================================================
+
 def validate_template(rows: List[List[str]]) -> None:
     """
     Проверяет наличие сигнатуры шаблона.
@@ -65,7 +98,6 @@ def validate_sizes(variable_cnt: int, targetfunction_cnt: int, restrictions_cnt:
         raise ValueError("Количество уступков превышает 2")
     if restrictions_cnt > 20:
         raise ValueError("Количество ограничений превышает 10")
-
     if variable_cnt == 0:
         raise ValueError("Не найдены переменные")
     if targetfunction_cnt == 0:
@@ -78,7 +110,23 @@ def validate_sizes(variable_cnt: int, targetfunction_cnt: int, restrictions_cnt:
 # ==========================================================
 # ПАРСИНГ
 # ==========================================================
-def parse_variable_cnt(str) -> int
+def parse_variable_cnt(rows: List[List[str]]) -> int:
+    """
+    Читает количество переменных из ячейки F3 (индекс [2][5]).
+    Возвращает сырое целое число без валидации диапазона.
+    """
+    try:
+        cell = rows[2][5]
+    except IndexError:
+        raise ValueError("Ячейка F3 отсутствует в CSV")
+    if not cell.strip():
+        raise ValueError("Ячейка F3 (количество переменных) пуста")
+    if not _is_number(cell):
+        raise ValueError(f"Ячейка F3 должна содержать число, получено: '{cell}'")
+    value = _parse_number(cell)
+    if value != int(value):
+        raise ValueError(f"Количество переменных должно быть целым числом, получено: '{cell}'")
+    return int(value)
 
 def parse_target_functions_params()  -> None:
     '''
