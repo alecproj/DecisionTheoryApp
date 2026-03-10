@@ -97,7 +97,7 @@ def validate_sizes(variable_cnt: int, targetfunction_cnt: int, restrictions_cnt:
     if concession_cnt > 2:
         raise ValueError("Количество уступков превышает 2")
     if restrictions_cnt > 20:
-        raise ValueError("Количество ограничений превышает 10")
+        raise ValueError("Количество ограничений превышает 20")
     if variable_cnt == 0:
         raise ValueError("Не найдены переменные")
     if targetfunction_cnt == 0:
@@ -284,20 +284,19 @@ def validate_constraint_functions_params(
 
 def prepare_input_data(
     variable_cnt: int,
+    targetfunction_cnt: int,
+    restriction_cnt: int,
+    concession_cnt: int,
     targetfunctions: List[List[float]],
     extremumtype: List[str],
     restrictions: List[List[float]],
     concessions: List[float],
-):
-    """
-    Собирает все провалидированные данные.
-    Возвращает словарь, готовый для передачи в CSMInput.
-    """
+) -> dict:
     return dict(
         variable_cnt=variable_cnt,
-        targetfunction_cnt=len(targetfunctions),
-        restriction_cnt=len(restrictions),
-        concession_cnt=len(concessions),
+        targetfunction_cnt=targetfunction_cnt,
+        restriction_cnt=restriction_cnt,
+        concession_cnt=concession_cnt,
         targetfunctions=targetfunctions,
         extremumtype_targetfunctions=extremumtype,
         restrictions=restrictions,
