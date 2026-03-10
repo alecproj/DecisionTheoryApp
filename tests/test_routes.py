@@ -186,6 +186,24 @@ def test_get_report_invalid_run_id_format(client):
     assert r.status_code == 400
     assert r.json["code"] == "INVALID_RUN_ID"
 
+def test_get_report_nonexistent_run_id(client):
+    """GET /api/reports/<валидный но несуществующий ObjectId>: 404 REPORT_NOT_FOUND."""
+    r = client.get("/api/reports/000000000000000000000000")
+    assert r.status_code == 404
+    assert r.json["code"] == "REPORT_NOT_FOUND"
+
+
+# ══════════════════════════════════════════════════════════════
+# GET /api/reports/{run_id} — успешное получение отчёта (200)
+# ══════════════════════════════════════════════════════════════
+
+def test_get_report_success_response_shape(client):
+    """GET /api/reports/{run_id}: 200 и поля run_id, report_name, markdown."""
+    run_r = _post_run(client, "example", report_name="Имя отчёта")
+    run_id = run_r.json["run_id"]
+
+    r = client.get(f"/api/reports/{run_id}")
+    assert r.status_code == 200
     assert r.json["run_id"] == run_id
     assert r.json["report_name"] == "Имя отчёта"
     assert isinstance(r.json.get("markdown"), str)
@@ -203,6 +221,22 @@ def test_get_report_example_markdown_content(client):
 # GET /api/reports — список отчётов с пагинацией
 # ══════════════════════════════════════════════════════════════
 
+def test_list_reports_response_shape(client):
+    """GET /api/reports: 200 и поля page, page_size, total, items (список)."""
+    r = client.get("/api/reports")
+    assert r.status_code == 200
+    assert isinstance(r.json.get("items"), list)
+    assert {"page", "page_size", "total", "items"} <= r.json.keys()
+
+def test_list_reports_default_pagination(client):
+    """GET /api/reports без параметров: page=1 и page_size=50."""
+    r = client.get("/api/reports")
+    assert r.json["page"] == 1
+    assert r.json["page_size"] == 50
+
+def test_list_reports_custom_pagination(client):
+    """GET /api/reports?page=2&page_size=10: корректные page и page_size."""
+    r = client.get("/api/reports?page=2&page_size=10")
     assert r.json["page"] == 2
     assert r.json["page_size"] == 10
 
