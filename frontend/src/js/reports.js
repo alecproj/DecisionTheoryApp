@@ -5,13 +5,34 @@
 const MODE = window.APP_MODE || "real";
 const API_BASE = window.API_BASE || "";
 
+const DEFAULT_PAGE = 1;
+const DEFAULT_PAGE_SIZE = 50;
+
 // ================================
-// 🌐 fetch helper
+// 🌐 Fetch helper
 // ================================
 
 async function getJSON(url) {
+
   const r = await fetch(url);
-  if (!r.ok) throw new Error(`HTTP ${r.status}: ${url}`);
+
+  if (!r.ok) {
+
+    let err;
+
+    try {
+      err = await r.json();
+    } catch {
+      throw new Error(`HTTP ${r.status}`);
+    }
+
+    if (err && err.error) {
+      throw new Error(`${err.error} (${err.code})`);
+    }
+
+    throw new Error(`HTTP ${r.status}`);
+  }
+
   return await r.json();
 }
 
@@ -19,31 +40,22 @@ async function getJSON(url) {
 // 📦 Получение списка отчетов
 // ================================
 
-async function fetchReports() {
+async function fetchReports(page = DEFAULT_PAGE, pageSize = DEFAULT_PAGE_SIZE) {
 
   if (MODE === "mock") {
 
-    // mock режим — один отчет
-    const rep = await getJSON("./mocks/report.json");
+    return await getJSON("./mocks/reports.json");
 
-    return {
-      items: [
-        {
-          run_id: rep.run_id,
-          report_name: rep.markdown
-            .split("\n")[0]
-            .replace("#", "")
-            .trim()
-        }
-      ]
-    };
   }
 
-  return await getJSON(`${API_BASE}/api/reports`);
+  const url =
+    `${API_BASE}/reports?page=${page}&page_size=${pageSize}`;
+
+  return await getJSON(url);
 }
 
 // ================================
-// 🎨 Отображение списка
+// 🎨 Отображение списка отчетов
 // ================================
 
 function renderReports(data) {
@@ -53,7 +65,9 @@ function renderReports(data) {
   const items = data.items || [];
 
   if (items.length === 0) {
+
     container.innerHTML = "<p>Отчётов пока нет</p>";
+
     return;
   }
 
@@ -68,7 +82,9 @@ function renderReports(data) {
 
     const btn = document.createElement("button");
 
-    btn.textContent = r.report_name || r.run_id;
+    btn.className = "report-button";
+
+    btn.textContent = r.report_name;
 
     btn.onclick = () => {
 
@@ -82,6 +98,16 @@ function renderReports(data) {
   }
 
   container.appendChild(ul);
+
+  // информация о количестве
+  const info = document.createElement("p");
+
+  info.className = "reports-info";
+
+  info.textContent =
+    `Всего отчётов: ${data.total}`;
+
+  container.appendChild(info);
 }
 
 // ================================
@@ -90,7 +116,7 @@ function renderReports(data) {
 
 async function initReports() {
 
-  const el = document.getElementById("reports-list");a
+  const el = document.getElementById("reports-list");
 
   if (!el) return;
 
@@ -104,7 +130,8 @@ async function initReports() {
 
   } catch (e) {
 
-    el.innerHTML = `<p class="error">Ошибка: ${e.message}</p>`;
+    el.innerHTML =
+      `<p class="error">Ошибка загрузки отчётов: ${e.message}</p>`;
   }
 }
 
