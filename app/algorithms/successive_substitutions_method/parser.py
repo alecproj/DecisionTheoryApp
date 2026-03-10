@@ -128,11 +128,39 @@ def parse_variable_cnt(rows: List[List[str]]) -> int:
         raise ValueError(f"Количество переменных должно быть целым числом, получено: '{cell}'")
     return int(value)
 
-def parse_target_functions_params()  -> None:
-    '''
-    parse_target_functions_params - передать в функцию только ячейки из диапазона C11:F12 и строчка ниже С13-E13(не весь шаблон)
-    и в ответ получить какую-нибудь структуру данных с непровалидированными данными.
-    '''
+def parse_target_functions_params(rows: List[List[str]]) -> List[RawTargetFunction]:
+    """
+    Читает диапазон C11:F13 (rows[10:13], cols [2:6]).
+    Формат строки: функция | правая часть | максимум (0/1) | уступки
+    Уступка у последней функции может быть пустой.
+    Возвращает список RawTargetFunction с непровалидированными данными.
+    """
+    cells = [row[2:6] for row in rows[10:13]]
+    result = []
+    for row_offset, row in enumerate(cells):
+        if all(not cell.strip() for cell in row):
+            continue
+        if len(row) < 4:
+            raise ValueError(
+                f"Строка {row_offset + 11} содержит меньше 4 колонок "
+                f"в блоке целевых функций"
+            )
+        function_str   = row[0].strip()
+        right_part_str = row[1].strip()
+        is_max_str     = row[2].strip()
+        concession_str = row[3].strip()  # может быть пустой у последней функции
+        if not function_str:
+            break  # дошли до конца заполненных строк
+        result.append(RawTargetFunction(
+            function_str=function_str,
+            right_part_str=right_part_str,
+            is_max_str=is_max_str,
+            concession_str=concession_str,
+        ))
+
+    return result
+
+
 
 def validate_target_functions_params()
     '''
