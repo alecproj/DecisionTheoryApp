@@ -240,10 +240,47 @@ def parse_constraint_functions_params(rows: List[List[str]]) -> List[RawConstrai
 
     return result
 
-def validate_constraint_functions_params()
-    '''
-    аналогично с целевыми функциями
-    '''
+def validate_constraint_functions_params(
+    raw: List[RawConstraintFunction],
+    variable_cnt: int
+) -> List[List[float]]:
+    """
+    Валидирует сырые данные функций ограничений.
+    Знаки приводятся к стандартному виду <=:
+      - '>=' умножается на -1
+      - '='  остаётся как есть (передаётся отдельной строкой)
+    Возвращает restrictions: List[List[float]] — коэффициенты + правая часть со знаком.
+    """
+    valid_symbols = [f"x{i}" for i in range(1, variable_cnt + 1)]
+    allowed_signs = {">=", "<=", "="}
+
+    restrictions = []
+
+    for i, item in enumerate(raw):
+        # --- sign ---
+        if item.sign_str not in allowed_signs:
+            raise ValueError(
+                f"Ограничение {i+1}: недопустимый знак '{item.sign_str}'. "
+                f"Допустимы: {allowed_signs}"
+            )
+
+        # --- right_part ---
+        if not item.right_part_str:
+            raise ValueError(f"Ограничение {i+1}: правая часть пуста")
+        right_part = _parse_number(item.right_part_str)
+
+        # --- function → коэффициенты ---
+        coefficients = _parse_function_to_coefficients(
+            item.function_str, valid_symbols, label=f"Ограничение {i+1}"
+        )
+        # --- приведение знака ---
+        # Формат строки: [коэф1, коэф2, ..., коэфN, правая_часть]
+        row = coefficients + [right_part]
+        if item.sign_str == ">=":
+            row = [-v for v in row]  # умножаем на -1, превращаем >= в <=
+        restrictions.append(row)
+
+    return restrictions
 
 def prepare_input_data()
     '''
