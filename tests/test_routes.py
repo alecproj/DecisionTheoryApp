@@ -4,9 +4,7 @@ from app import create_app
 
 @pytest.fixture()
 def client():
-    # Для локального запуска тестов без Docker Mongo:
-    # можно просто пропустить тесты, требующие БД,
-    # или поднять docker compose перед тестами.
+    # Для локального запуска тестов без Docker Mongo: можно просто пропустить тесты, требующие БД, или поднять docker compose перед тестами.
     os.environ.setdefault("MONGO_URL", "mongodb://localhost:27017")
     os.environ.setdefault("MONGO_DB", "decision_theory_test")
 
