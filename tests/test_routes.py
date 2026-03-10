@@ -197,24 +197,20 @@ def test_get_report_nonexistent_run_id(client):
 # GET /api/reports/{run_id} — успешное получение отчёта (200)
 # ══════════════════════════════════════════════════════════════
 
-def test_get_report_success_response_shape(client):
-    """GET /api/reports/{run_id}: 200 и поля run_id, report_name, markdown."""
+def test_get_report_example(client):
+    """Полный цикл example: 200, поля run_id/report_name/markdown, содержимое Result и a+b."""
     run_r = _post_run(client, "example", report_name="Имя отчёта")
     run_id = run_r.json["run_id"]
 
     r = client.get(f"/api/reports/{run_id}")
+    md = r.json["markdown"]
+
     assert r.status_code == 200
     assert r.json["run_id"] == run_id
     assert r.json["report_name"] == "Имя отчёта"
-    assert isinstance(r.json.get("markdown"), str)
-    assert len(r.json["markdown"]) > 0
-
-def test_get_report_example_markdown_content(client):
-    """Отчёт example-алгоритма содержит раздел Result и колонку a+b."""
-    run_r = _post_run(client, "example")
-    r = client.get(f"/api/reports/{run_r.json['run_id']}")
-    assert "Result" in r.json["markdown"]
-    assert "a+b" in r.json["markdown"]
+    assert isinstance(md, str)
+    assert "Result" in md
+    assert "a+b" in md
 
 
 # ══════════════════════════════════════════════════════════════
@@ -319,25 +315,15 @@ def test_ahp_run_invalid_csv_no_ahp_signature_returns_400(client):
 # GET /api/reports/{run_id} — содержимое AHP отчёта
 # ══════════════════════════════════════════════════════════════
 
-def test_ahp_report_contains_criteria_section(client):
-    """Отчёт AHP содержит раздел с критериями."""
-    run_r = _post_ahp_run(client)
-    r = client.get(f"/api/reports/{run_r.json['run_id']}")
-    assert r.status_code == 200
-    assert "ЦЕНА" in r.json["markdown"]
-
-def test_ahp_report_contains_alternatives(client):
-    """Отчёт AHP имеет названия альтернатив из CSV."""
+def test_ahp_report_markdown_content(client):
+    """Отчёт AHP содержит критерии, альтернативы, CR и итоговые рейтинги."""
     run_r = _post_ahp_run(client)
     r = client.get(f"/api/reports/{run_r.json['run_id']}")
     md = r.json["markdown"]
+    assert r.status_code == 200
+    assert "ЦЕНА" in md
     assert "КВАРТИРА 1" in md
     assert "КВАРТИРА 2" in md
     assert "КВАРТИРА 3" in md
-
-def test_ahp_report_contains_consistency_section(client):
-    """Отчёт AHP имеет раздел оценки согласованности и итоговые рейтинги альтернатив."""
-    run_r = _post_ahp_run(client)
-    r = client.get(f"/api/reports/{run_r.json['run_id']}")
-    assert "CR" in r.json["markdown"]
-    assert "Итоговые рейтинги" in r.json["markdown"]
+    assert "CR" in md
+    assert "Итоговые рейтинги" in md
