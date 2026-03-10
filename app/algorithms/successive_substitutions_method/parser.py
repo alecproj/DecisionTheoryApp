@@ -160,8 +160,6 @@ def parse_target_functions_params(rows: List[List[str]]) -> List[RawTargetFuncti
 
     return result
 
-
-
 def validate_target_functions_params(
     raw: List[RawTargetFunction],
     variable_cnt: int) -> Tuple[List[List[float]], List[str], List[float]]:
@@ -208,10 +206,39 @@ def validate_target_functions_params(
         targetfunctions.append(coefficients)
     return targetfunctions, extremumtype, concessions
 
-def parse_constraint_functions_params() -> None
-    '''
-    аналогично с целевыми функциями передаем только диапазон C20:E39, не весь шаблон. Аналогично получаем структуру с непровалидированными параметрами.
-    '''
+def parse_constraint_functions_params(rows: List[List[str]]) -> List[RawConstraintFunction]:
+    """
+    Читает диапазон C20:E39 (rows[19:39], cols [2:5]).
+    Формат строки: функция | знак сравнения | правая часть
+    Возвращает список RawConstraintFunction с непровалидированными данными.
+    """
+    cells = [row[2:5] for row in rows[19:39]]
+    result = []
+
+    for row_offset, row in enumerate(cells):
+        if all(not cell.strip() for cell in row):
+            continue
+
+        if len(row) < 3:
+            raise ValueError(
+                f"Строка {row_offset + 20} содержит меньше 3 колонок "
+                f"в блоке ограничений"
+            )
+
+        function_str   = row[0].strip()
+        sign_str       = row[1].strip()
+        right_part_str = row[2].strip()
+
+        if not function_str:
+            continue  # пустая строка внутри диапазона — пропускаем
+
+        result.append(RawConstraintFunction(
+            function_str=function_str,
+            sign_str=sign_str,
+            right_part_str=right_part_str,
+        ))
+
+    return result
 
 def validate_constraint_functions_params()
     '''
