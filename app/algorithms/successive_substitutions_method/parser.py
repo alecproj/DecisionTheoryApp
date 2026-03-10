@@ -282,18 +282,49 @@ def validate_constraint_functions_params(
 
     return restrictions
 
-def prepare_input_data()
-    '''
-    если требуется итоговая подготовка входных данных для алгоритма 
-    (Возвращает структуру входных данных алгоритма).
-    '''
+def prepare_input_data(
+    variable_cnt: int,
+    targetfunctions: List[List[float]],
+    extremumtype: List[str],
+    restrictions: List[List[float]],
+    concessions: List[float],
+):
+    """
+    Собирает все провалидированные данные.
+    Возвращает словарь, готовый для передачи в CSMInput.
+    """
+    return dict(
+        variable_cnt=variable_cnt,
+        targetfunction_cnt=len(targetfunctions),
+        restriction_cnt=len(restrictions),
+        concession_cnt=len(concessions),
+        targetfunctions=targetfunctions,
+        extremumtype_targetfunctions=extremumtype,
+        restrictions=restrictions,
+        concessions=concessions,
+    )
 
-def validate_input_data()
-    '''
-    полная валидация входных данных по условиям алгоритма. 
-    Проверить то, что еще не проверено с точки зрения логики входных данных, 
-    а не пользовательского ввода.
-    '''
+def validate_input_data(data: dict) -> None:
+    """
+    Финальная валидация логики входных данных алгоритма (не пользовательского ввода):
+    - уступки строго положительные
+    - количество уступок = количество целевых функций - 1
+    """
+    concessions = data["concessions"]
+    targetfunction_cnt = data["targetfunction_cnt"]
+
+    expected = targetfunction_cnt - 1
+    if len(concessions) != expected:
+        raise ValueError(
+            f"Ожидается {expected} уступок для {targetfunction_cnt} "
+            f"целевых функций, найдено: {len(concessions)}"
+        )
+
+    for i, c in enumerate(concessions):
+        if c <= 0:
+            raise ValueError(
+                f"Уступка {i+1} должна быть строго положительной, получено: {c}"
+            )
 
 
 # ==========================================================
