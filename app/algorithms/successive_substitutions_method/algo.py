@@ -77,7 +77,9 @@ def run(input_data: CSMInput, reporter) -> None:
     reporter.h2("Исходные данные")
 
     reporter.text(f"Количество переменных: **{input_data.variable_cnt}**")
+    reporter.text("")
     reporter.text(f"Количество целевых функций: **{input_data.targetfunction_cnt}**")
+    reporter.text("")
     reporter.text(f"Количество ограничений: **{input_data.restriction_cnt}**")
 
     reporter.text("\nЦелевые функции:")
@@ -150,6 +152,7 @@ def run(input_data: CSMInput, reporter) -> None:
         step_results.append((z_optimal, x_optimal))
 
         # Таблица результатов шага
+        reporter.text("")
         reporter.table(
             ["Переменная", "Значение"],
             [[f"x{j+1}", round(x_optimal[j], 6)] for j in range(input_data.variable_cnt)]
