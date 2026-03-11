@@ -1,16 +1,16 @@
 {
   "algorithms": [
     {
-      "id": "example",
+      "id": "ahp",
       "name": "Метод анализа иерархий",
-      "description": "Краткое описание алгоритма метода анализа иерархий",
+      "description": "Описание метода анализа иерархий.",
       "guide_link": "https://example.com/guide",
       "template_link": "https://example.com/template"
     },
     {
-      "id": "example",
-      "name": "Название алгоритма",
-      "description": "Краткое описание алгоритма.",
+      "id": "asc",
+      "name": "Метод последовательных уступок",
+      "description": "Описание метода последовательных уступок.",
       "guide_link": "https://example.com/guide",
       "template_link": "https://example.com/template"
     }

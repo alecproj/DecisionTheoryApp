@@ -84,7 +84,7 @@ h1 {
 }
 
 p {
-  margin-bottom: 13px;
+  margin-bottom: 25px;
   color: var(--muted);
 }
 
@@ -122,8 +122,7 @@ label {
 /* ===============================
    🔢 Input
 ================================ */
-input[type="number"],
-input[type="text"] {
+input[type="number"] {
   padding: 10px 12px;
   border-radius: 10px;
   border: 1px solid var(--border);
@@ -133,8 +132,7 @@ input[type="text"] {
   transition: all 0.2s ease;
 }
 
-input[type="number"]:focus,
-input[type="text"]:focus {
+input:focus {
   outline: none;
   border-color: var(--accent);
   box-shadow: 0 0 0 2px rgba(39, 205, 227, 0.3);
@@ -327,73 +325,24 @@ button:disabled {
   box-shadow: none !important;
 }
 
+
 /* ===============================
-   🔙 Навигация
+   📋 Список отчетов
 ================================ */
 
-.navigation {
-  margin-top: 25px;
-  list-style: none;
-}
-
-.navigation ul {
+.reports-ul {
   list-style: none;
   padding: 0;
-  margin: 0;
 }
 
-.navigation li {
-  list-style: none;
-}
-
-/* ===============================
-   🔙 Кнопка назад
-================================ */
-
-.back-button {
-  display: inline-block;
-  padding: 12px 18px;
-
-  border-radius: 12px;
-  border: 1px solid var(--border);
-
-  background: rgba(30, 41, 59, 0.6);
-  color: var(--text);
-
-  font-size: 1rem;
-  font-weight: 500;
-
-  text-decoration: none;
-  cursor: pointer;
-
-  transition: all 0.25s ease;
-}
-
-.back-button:hover {
-  background: var(--accent);
-  border-color: var(--accent);
-
-  color: #ffffff;
-
-  transform: translateY(-3px);
-
-  box-shadow: 0 10px 25px rgba(39, 205, 227, 0.35);
-}
-
-.back-button:active {
-  transform: translateY(-1px) scale(0.98);
-}
-
-label {
-  display: flex;
-  flex-direction: column;
-  font-size: 0.85rem;
-  color: var(--muted);
-  gap: 6px;
+.reports-ul li {
   margin-bottom: 10px;
 }
 
-input::placeholder {
-  color: var(--muted);
-  opacity: 0.7;
+.reports-ul button {
+  width: 100%;
+}
+
+.links {
+  margin-top: 10px;
 }

@@ -6,12 +6,17 @@ const MODE = window.APP_MODE || "real";
 const API_BASE = window.API_BASE || "";
 
 // ================================
-// 🌐 Утилита fetch JSON
+// 🌐 Fetch JSON
 // ================================
 
 async function getJSON(url) {
+
   const r = await fetch(url);
-  if (!r.ok) throw new Error(`HTTP ${r.status}: ${url}`);
+
+  if (!r.ok) {
+    throw new Error(`HTTP ${r.status}`);
+  }
+
   return await r.json();
 }
 
@@ -20,11 +25,12 @@ async function getJSON(url) {
 // ================================
 
 async function fetchAlgorithms() {
+
   if (MODE === "mock") {
     return await getJSON("./mocks/algorithms.json");
   }
 
-  return await getJSON(`${API_BASE}/api/algorithms`);
+  return await getJSON(`${API_BASE}/algorithms`);
 }
 
 // ================================
@@ -33,24 +39,22 @@ async function fetchAlgorithms() {
 
 function renderAlgorithm(a) {
 
-  const nameEl = document.getElementById("algorithm-name");
-  const descEl = document.getElementById("algorithm-description");
+  document.getElementById("algorithm-name").textContent = a.name;
+  document.getElementById("algorithm-description").textContent = a.description;
 
   const guideEl = document.getElementById("guide-link");
   const templateEl = document.getElementById("template-link");
-
   const videoEl = document.getElementById("guide-video");
 
-  if (nameEl) nameEl.textContent = a.name;
-  if (descEl) descEl.textContent = a.description;
+  if (a.guide_link) {
+    guideEl.href = `${API_BASE}${a.guide_link}`;
+  }
 
-  if (guideEl) guideEl.href = a.guide_link;
-  if (templateEl) templateEl.href = a.template_link;
+  if (a.template_link) {
+    templateEl.href = `${API_BASE}${a.template_link}`;
+  }
 
-  // ================================
-  // 🎬 Автовстраивание YouTube
-  // ================================
-
+  // YouTube embed
   if (videoEl && a.guide_link && a.guide_link.includes("youtube")) {
 
     const embed = a.guide_link
@@ -58,10 +62,7 @@ function renderAlgorithm(a) {
       .replace("youtu.be/", "youtube.com/embed/");
 
     videoEl.innerHTML = `
-      <iframe
-        src="${embed}"
-        allowfullscreen>
-      </iframe>
+      <iframe src="${embed}" allowfullscreen></iframe>
     `;
   }
 }
@@ -84,10 +85,9 @@ async function fileToCSV(file) {
 
     const workbook = XLSX.read(data);
 
-    const sheetName = workbook.SheetNames[0];
-    const worksheet = workbook.Sheets[sheetName];
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
 
-    const csv = XLSX.utils.sheet_to_csv(worksheet);
+    const csv = XLSX.utils.sheet_to_csv(sheet);
 
     return new File(
       [csv],
@@ -103,27 +103,38 @@ async function fileToCSV(file) {
 // 🚀 Создание run
 // ================================
 
-async function createRunWithFile(algorithm_id, file) {
+async function createRunWithFile(algorithm_id, report_name, file) {
 
   if (MODE === "mock") {
-    return await getJSON("./mocks/run_created.json");
+
+    const mock = await getJSON("./mocks/run_created.json");
+
+    return {
+      ...mock,
+      algorithm_id,
+      report_name
+    };
   }
 
   const formData = new FormData();
 
-  formData.append("algorithm_id", algorithm_id);
+  formData.append("report_name", report_name);
   formData.append("file", file);
 
-  const r = await fetch(`${API_BASE}/api/runs`, {
+  const r = await fetch(`${API_BASE}/runs/${algorithm_id}`, {
     method: "POST",
-    body: formData,
+    body: formData
   });
 
-  if (!r.ok) {
+  if (r.status !== 201) {
 
     const body = await r.json().catch(() => ({}));
 
-    throw new Error(body.error || `HTTP ${r.status}`);
+    throw new Error(
+      body.error
+        ? `${body.error} (${body.code})`
+        : `HTTP ${r.status}`
+    );
   }
 
   return await r.json();
@@ -138,13 +149,15 @@ async function initInput() {
   const form = document.getElementById("input-form");
   if (!form) return;
 
+  const reportNameInput = document.getElementById("report-name");
   const fileInput = document.getElementById("file-input");
+
   const dropZone = document.getElementById("drop-zone");
   const runButton = document.getElementById("run-button");
 
   const message = document.getElementById("message");
 
-  const algId = localStorage.getItem("algorithm_id") || "example";
+  const algId = localStorage.getItem("algorithm_id") || "ahp";
 
   let selectedFile = null;
 
@@ -155,31 +168,41 @@ async function initInput() {
   try {
 
     const data = await fetchAlgorithms();
-    const algorithms = data.algorithms || [];
 
-    const algorithm = algorithms.find(a => a.id === algId);
+    const algorithm = data.algorithms.find(a => a.id === algId);
 
     if (algorithm) {
       renderAlgorithm(algorithm);
     }
 
-  } catch (e) {
+  } catch {
 
-    const nameEl = document.getElementById("algorithm-name");
-
-    if (nameEl) {
-      nameEl.textContent = "Ошибка загрузки алгоритма";
-    }
+    document.getElementById("algorithm-name").textContent =
+      "Ошибка загрузки алгоритма";
   }
 
   // ================================
-  // 📂 Click по Drop zone
+  // 🔘 Кнопка запуска
   // ================================
 
-  dropZone.addEventListener("click", () => fileInput.click());
+  function updateRunButton() {
+
+    const hasName = reportNameInput.value.trim().length > 0;
+    const hasFile = !!selectedFile;
+
+    runButton.disabled = !(hasName && hasFile);
+  }
 
   // ================================
-  // 📂 Выбор файла
+  // 📂 click по зоне
+  // ================================
+
+  dropZone.addEventListener("click", () => {
+    fileInput.click();
+  });
+
+  // ================================
+  // 📂 выбор файла
   // ================================
 
   fileInput.addEventListener("change", () => {
@@ -187,11 +210,10 @@ async function initInput() {
     selectedFile = fileInput.files[0];
 
     if (selectedFile) {
-
       dropZone.textContent = `Выбран файл: ${selectedFile.name}`;
-
-      runButton.disabled = false;
     }
+
+    updateRunButton();
   });
 
   // ================================
@@ -199,20 +221,17 @@ async function initInput() {
   // ================================
 
   dropZone.addEventListener("dragover", (e) => {
-
     e.preventDefault();
     dropZone.classList.add("dragover");
   });
 
   dropZone.addEventListener("dragleave", () => {
-
     dropZone.classList.remove("dragover");
   });
 
   dropZone.addEventListener("drop", (e) => {
 
     e.preventDefault();
-
     dropZone.classList.remove("dragover");
 
     const file = e.dataTransfer.files[0];
@@ -220,50 +239,71 @@ async function initInput() {
 
     const name = file.name.toLowerCase();
 
-    if (
-      !name.endsWith(".csv") &&
-      !name.endsWith(".xlsx") &&
-      !name.endsWith(".xls")
-    ) {
+    if (!name.endsWith(".csv") &&
+        !name.endsWith(".xlsx") &&
+        !name.endsWith(".xls")) {
 
       alert("Нужен CSV или Excel файл");
-
       return;
     }
 
     selectedFile = file;
-
     fileInput.files = e.dataTransfer.files;
 
     dropZone.textContent = `Выбран файл: ${file.name}`;
 
-    runButton.disabled = false;
+    updateRunButton();
   });
 
   // ================================
-  // 🚀 Submit
+  // ✏️ имя отчета
   // ================================
 
-  form.addEventListener("submit", async (ev) => {
+  reportNameInput.addEventListener("input", updateRunButton);
 
-    ev.preventDefault();
+  // ================================
+  // 🚀 submit
+  // ================================
+
+  form.addEventListener("submit", async (e) => {
+
+    e.preventDefault();
 
     if (!selectedFile) {
 
       message.textContent = "Выберите файл";
       message.className = "error";
-
       return;
     }
 
-    message.textContent = "Загружаю...";
+    if (selectedFile.size === 0) {
+
+      message.textContent = "Файл пустой";
+      message.className = "error";
+      return;
+    }
+
+    const report_name = reportNameInput.value.trim();
+
+    if (!report_name) {
+
+      message.textContent = "Введите имя отчета";
+      message.className = "error";
+      return;
+    }
+
+    message.textContent = "Загрузка...";
     message.className = "";
 
     try {
 
       const csvFile = await fileToCSV(selectedFile);
 
-      const run = await createRunWithFile(algId, csvFile);
+      const run = await createRunWithFile(
+        algId,
+        report_name,
+        csvFile
+      );
 
       localStorage.setItem("run_id", run.run_id);
 
@@ -278,7 +318,7 @@ async function initInput() {
 }
 
 // ================================
-// 🚀 Авто запуск
+// 🚀 Старт
 // ================================
 
 initInput();

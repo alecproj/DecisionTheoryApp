@@ -190,3 +190,17 @@ h1 {
   }
 }
 
+.links {
+  margin-top: 20px;
+}
+
+a {
+  color: #27cde3;
+  text-decoration: none;
+  transition: 0.2s;
+}
+
+a:hover {
+  color: #ffffff;
+  text-decoration: underline;
+}

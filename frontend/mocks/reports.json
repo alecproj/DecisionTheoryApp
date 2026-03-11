@@ -1,0 +1,19 @@
+{
+  "page": 1,
+  "page_size": 50,
+  "total": 3,
+  "items": [
+    {
+      "run_id": "67cdb4e8f9b2a9b7d6f12345",
+      "report_name": "Выбор ноутбука для учебы"
+    },
+    {
+      "run_id": "67cdb450f9b2a9b7d6f12344",
+      "report_name": "Выбор поставщика"
+    },
+    {
+      "run_id": "67cdb410f9b2a9b7d6f12343",
+      "report_name": "Выбор сервера для проекта"
+    }
+  ]
+}
