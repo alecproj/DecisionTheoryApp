@@ -118,7 +118,7 @@ def validator(input_data: Dict[str, Any]) -> CSMInput:
         restrictions=restrictions,
         concessions=concessions,
     )
-    
+
     try:
         validate_input_data(csm_input)
     except Exception as e:
