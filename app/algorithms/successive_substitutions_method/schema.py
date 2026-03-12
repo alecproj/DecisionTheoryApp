@@ -1,6 +1,6 @@
 from typing import Any, Dict, List
 from dataclasses import dataclass
-from parser import (
+from .parser import (
     read_csv,
     validate_template,
     validate_sizes,
@@ -9,7 +9,6 @@ from parser import (
     validate_target_functions_params,
     parse_constraint_functions_params,
     validate_constraint_functions_params,
-    prepare_input_data,
     validate_input_data,
 )
 
