@@ -108,18 +108,7 @@ def validator(input_data: Dict[str, Any]) -> CSMInput:
     # 8. Сборка и финальная валидация
     # --------------------------------------------------
 
-    try:
-        data = prepare_input_data(variable_cnt, targetfunction_cnt, restriction_cnt, concession_cnt,
-                                  targetfunctions, extremumtype, restrictions, concessions)
-        validate_input_data(data)
-    except Exception as e:
-        raise ValueError(f"Ошибка валидации входных данных: {e}")
-
-    # --------------------------------------------------
-    # 9. Возврат результата
-    # --------------------------------------------------
-
-    return CSMInput(
+    csm_input = CSMInput(
         variable_cnt=variable_cnt,
         restriction_cnt=restriction_cnt,
         targetfunction_cnt=targetfunction_cnt,
@@ -129,3 +118,13 @@ def validator(input_data: Dict[str, Any]) -> CSMInput:
         restrictions=restrictions,
         concessions=concessions,
     )
+    
+    try:
+        validate_input_data(csm_input)
+    except Exception as e:
+        raise ValueError(f"Ошибка валидации входных данных: {e}")
+
+    # --------------------------------------------------
+    # 9. Возврат результата
+    # --------------------------------------------------
+    return csm_input

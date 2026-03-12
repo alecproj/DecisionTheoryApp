@@ -6,6 +6,9 @@ from io import StringIO
 from typing import List, Optional, Tuple
 from sympy import symbols, sympify, SympifyError, Mul, Poly
 
+from app.algorithms.successive_substitutions_method.schema import CSMInput
+
+
 # ==========================================================
 # СТРУКТУРЫ СЫРЫХ ДАННЫХ
 # ==========================================================
@@ -281,44 +284,20 @@ def validate_constraint_functions_params(
 
     return restrictions
 
-def prepare_input_data(
-    variable_cnt: int,
-    targetfunction_cnt: int,
-    restriction_cnt: int,
-    concession_cnt: int,
-    targetfunctions: List[List[float]],
-    extremumtype: List[str],
-    restrictions: List[List[float]],
-    concessions: List[float],
-) -> dict:
-    return dict(
-        variable_cnt=variable_cnt,
-        targetfunction_cnt=targetfunction_cnt,
-        restriction_cnt=restriction_cnt,
-        concession_cnt=concession_cnt,
-        targetfunctions=targetfunctions,
-        extremumtype_targetfunctions=extremumtype,
-        restrictions=restrictions,
-        concessions=concessions,
-    )
-
-def validate_input_data(data: dict) -> None:
+def validate_input_data(data: "CSMInput") -> None:
     """
     Финальная валидация логики входных данных алгоритма (не пользовательского ввода):
     - уступки строго положительные
     - количество уступок = количество целевых функций - 1
     """
-    concessions = data["concessions"]
-    targetfunction_cnt = data["targetfunction_cnt"]
 
-    expected = targetfunction_cnt - 1
-    if len(concessions) != expected:
+    expected = data.targetfunction_cnt - 1
+    if len(data.concessions) != expected:
         raise ValueError(
-            f"Ожидается {expected} уступок для {targetfunction_cnt} "
-            f"целевых функций, найдено: {len(concessions)}"
+            f"Ожидается {expected} уступок для {data.targetfunction_cnt} "
+            f"целевых функций, найдено: {len(data.concessions)}"
         )
-
-    for i, c in enumerate(concessions):
+    for i, c in enumerate(data.concessions):
         if c <= 0:
             raise ValueError(
                 f"Уступка {i+1} должна быть строго положительной, получено: {c}"
