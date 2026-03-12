@@ -59,6 +59,9 @@ function simpleMarkdown(md) {
   html = html.replace(/^## (.*$)/gim, "<h2>$1</h2>");
   html = html.replace(/^# (.*$)/gim, "<h1>$1</h1>");
 
+  // жирный текст **text**
+  html = html.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+
   // таблицы (простейший парсер)
   if (html.includes("|")) {
 
