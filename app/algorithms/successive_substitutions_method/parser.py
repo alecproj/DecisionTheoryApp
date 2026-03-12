@@ -4,8 +4,7 @@ import re
 from dataclasses import dataclass
 from io import StringIO
 from typing import List, Optional, Tuple
-from sympy import symbols, sympify, SympifyError
-
+from sympy import symbols, sympify, SympifyError, Mul, Poly
 
 # ==========================================================
 # СТРУКТУРЫ СЫРЫХ ДАННЫХ
@@ -347,6 +346,8 @@ def _parse_function_to_coefficients(
         expr = sympify(normalized, locals=sym_objects)
     except SympifyError as e:
         raise ValueError(f"{label}: не удалось разобрать выражение '{function_str}': {e}")
+    # проверка на линейность функции
+    _validate_linear(expr, valid_symbols, label)
 
     used_symbols = {str(s) for s in expr.free_symbols}
     invalid = used_symbols - set(valid_symbols)
@@ -362,3 +363,22 @@ def _parse_function_to_coefficients(
         coefficients.append(float(coef))
 
     return coefficients
+
+def _validate_linear(expr, valid_symbols: List[str], label: str) -> None:
+
+    sym_vars = [symbols(s) for s in valid_symbols]
+
+    # Проверяем что выражение — полином (отсекает sin, exp, log и т.д.)
+    try:
+        poly = Poly(expr, *sym_vars)
+    except Exception:
+        raise ValueError(
+            f"{label}: выражение не является линейной функцией — "
+            f"обнаружены нелинейные операции (sin, exp, log и т.д.)"
+        )
+
+    # Степень полинома должна быть не выше 1
+    if poly.total_degree() > 1:
+        raise ValueError(
+            f"{label}: выражение нелинейно — степень выражения {poly.total_degree()}"
+        )
