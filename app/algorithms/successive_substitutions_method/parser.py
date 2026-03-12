@@ -276,6 +276,8 @@ def validate_constraint_functions_params(
         row = coefficients + [right_part]
         if item.sign_str == ">=":
             row = [(-v + 0.0)  for v in row]  # умножаем на -1, превращаем >= в <=
+        if item.sign_str == "=":
+            raise ValueError(f"Операция '=' данной программой не поддерживается")
         restrictions.append(row)
 
     return restrictions
