@@ -28,7 +28,6 @@
 }
 
 body {
-  min-height: 100vh;
   color: var(--text);
   display: flex;
   flex-direction: column;
@@ -36,8 +35,15 @@ body {
   padding: 60px 20px;
   position: relative;
   overflow-x: hidden;
-  overflow-y: hidden;
-  background: linear-gradient(135deg, var(--bg1), var(--bg2), var(--bg3));
+
+  background: linear-gradient(
+    135deg,
+    var(--bg1),
+    var(--bg2),
+    var(--bg3)
+  );
+
+  background-attachment: fixed;
 }
 
 /* ===============================
@@ -63,7 +69,7 @@ body::before {
 
 body::after {
   background: #27cde3;
-  bottom: -150px;
+  bottom: -300px;
   right: -150px;
 }
 
