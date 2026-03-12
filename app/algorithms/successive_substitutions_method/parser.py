@@ -102,8 +102,6 @@ def validate_sizes(variable_cnt: int, targetfunction_cnt: int, restrictions_cnt:
         raise ValueError("Не найдены переменные")
     if targetfunction_cnt == 0:
         raise ValueError("Не найдены целевые функции")
-    if concession_cnt == 0:
-        raise ValueError("Не найдены уступки")
     if restrictions_cnt == 0:
         raise ValueError("Не найдены ограничения")
 
