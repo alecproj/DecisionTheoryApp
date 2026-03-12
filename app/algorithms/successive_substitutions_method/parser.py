@@ -54,7 +54,7 @@ def _normalize_function_str(expr: str) -> str:
     Приводит строку вида '2x1+x2-3x3' к виду '2*x1+x2-3*x3',
     понятному для sympy.
     """
-    return re.sub(r'(\d)(x)', r'\1*\2', expr)
+    return re.sub(r'(?<=\d)\s*(?=x)', '*', expr)
 
 # ==========================================================
 # ЧТЕНИЕ CSV
