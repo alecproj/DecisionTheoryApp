@@ -1,6 +1,6 @@
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 from dataclasses import dataclass
-from .parser import (
+from parser import (
     read_csv,
     validate_template,
     parse_criteria_table,
@@ -18,7 +18,7 @@ class AHPInput:
     alternative_pairwise: Optional[List[List[List[float]]]] = None
 
 
-def validator(input_data: str) -> AHPInput:
+def validator(input_data: Dict[str, Any]) -> AHPInput:
     """
     Точка входа.
     Получает CSV, полностью валидирует и возвращает AHPInput.
@@ -29,7 +29,8 @@ def validator(input_data: str) -> AHPInput:
     # --------------------------------------------------
 
     try:
-        rows = read_csv(input_data)
+        csv_text = str(input_data["csv"]).strip()
+        rows = read_csv(csv_text)
     except Exception as e:
         raise ValueError(f"Ошибка чтения CSV: {e}")
 

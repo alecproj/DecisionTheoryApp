@@ -1,6 +1,6 @@
 from typing import List, Tuple
 import numpy as np
-from .schema import AHPInput
+from schema import AHPInput
 
 def calculate_priorities(matrix: List[List[float]]) -> np.ndarray:
     mat = np.array(matrix, dtype=float)
