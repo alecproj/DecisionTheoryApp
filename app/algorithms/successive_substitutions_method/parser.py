@@ -86,7 +86,7 @@ def validate_template(rows: List[List[str]]) -> None:
             raise ValueError(f"Неверный шаблон CSV — строка {r+1} отсутствует")
         if c >= len(rows[r]):
             raise ValueError(f"Неверный шаблон CSV — колонка {c+1} отсутствует в строке {r+1}")
-        if rows[r][c].strip() != "AES":
+        if rows[r][c].strip() != "CSM":
             raise ValueError(f"Неверный шаблон CSV — сигнатура не найдена в ячейке {r+1},{c+1}")
 
 def validate_sizes(variable_cnt: int, targetfunction_cnt: int, restrictions_cnt: int, concession_cnt: int) -> None:
