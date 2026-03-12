@@ -2,7 +2,7 @@ from typing import List, Tuple
 import numpy as np
 from scipy.optimize import linprog
 
-from schema import CSMInput
+from .schema import CSMInput
 
 
 # ==========================================================
