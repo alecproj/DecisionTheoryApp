@@ -18,7 +18,7 @@ class AHPInput:
     alternative_pairwise: Optional[List[List[List[float]]]] = None
 
 
-def validator(input_data: Dict[str, Any]) -> AHPInput:
+def validator(input_data: str) -> AHPInput:
     """
     Точка входа.
     Получает CSV, полностью валидирует и возвращает AHPInput.
@@ -29,8 +29,7 @@ def validator(input_data: Dict[str, Any]) -> AHPInput:
     # --------------------------------------------------
 
     try:
-        csv_text = str(input_data["csv"]).strip()
-        rows = read_csv(csv_text)
+        rows = read_csv(input_data)
     except Exception as e:
         raise ValueError(f"Ошибка чтения CSV: {e}")
 
