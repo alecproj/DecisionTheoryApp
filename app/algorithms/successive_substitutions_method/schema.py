@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import List
 from dataclasses import dataclass
 from .parser import (
     read_csv,
@@ -13,7 +13,7 @@ from .parser import (
 )
 from .models import CSMInput
 
-def validator(input_data: Dict[str, Any]) -> CSMInput:
+def validator(input_data: str) -> CSMInput:
     """
     Точка входа.
     Получает CSV, полностью валидирует и возвращает CSMInput.
@@ -23,10 +23,7 @@ def validator(input_data: Dict[str, Any]) -> CSMInput:
     # 1. Проверка входа
     # --------------------------------------------------
 
-    if "csv" not in input_data:
-        raise ValueError("Обязательное поле: csv")
-
-    csv_text = str(input_data["csv"]).strip()
+    csv_text = input_data.strip()
     if not csv_text:
         raise ValueError("CSV пустой")
 
