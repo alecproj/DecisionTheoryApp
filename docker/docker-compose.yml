@@ -23,6 +23,14 @@ services:
       API_BASE: ""
     depends_on:
       - mongo
+  docs:
+    image: hrektts/doxygen
+    volumes:
+      - ..:/app
+    working_dir: /app
+    command: doxygen docs/Doxyfile
+    profiles:
+      - docs
 
 volumes:
   mongo_data:

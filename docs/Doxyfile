@@ -1,0 +1,10 @@
+PROJECT_NAME      = DecisionTheoryApp
+OUTPUT_DIRECTORY  = docs/generated
+INPUT             = app
+RECURSIVE         = YES
+FILE_PATTERNS     = *.py
+OPTIMIZE_OUTPUT_JAVA = YES
+EXTRACT_ALL       = YES
+GENERATE_HTML     = YES
+GENERATE_LATEX    = NO
+QUIET             = YES
