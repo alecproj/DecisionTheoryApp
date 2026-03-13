@@ -161,8 +161,17 @@ def parse_criteria_table(rows: List[List[str]]) -> Tuple[List[str], List[List[fl
     Размер матрицы определяется количеством критериев из F10:F28.
     """
     criteria_names = parse_criteria_names(rows)
-    criterias_cnt = len(criteria_names)
-
+    detected = count_filled_cells(rows[2], start_col=8, max_count=19)  # строка I3
+    if detected == 0:
+        raise ValueError("Не найдены данные в матрице критериев I3:AA21")
+    if detected > len(criteria_names):
+        raise ValueError(
+            f"В матрице критериев {detected} столбцов, "
+            f"но названий критериев только {len(criteria_names)}"
+        )
+    # работаем только с тем, что заполнено
+    criterias_cnt = detected
+    criteria_names = criteria_names[:criterias_cnt]
     pairwise = [[0.0] * criterias_cnt for _ in range(criterias_cnt)]
 
     for i in range(criterias_cnt):
@@ -202,7 +211,17 @@ def parse_alternative_table(
     - флаги сортировки    из AB25:AB43 (rows[24:43], col 27)
     """
     alternative_names = parse_alternative_names(rows)
-    alternatives_cnt = len(alternative_names)
+
+    detected = count_filled_cells(rows[24], start_col=8, max_count=19)  # строка I25
+    if detected == 0:
+        raise ValueError("Не найдены значения альтернатив в диапазоне I25:AA25")
+    if detected > len(alternative_names):
+        raise ValueError(
+            f"В таблице значений {detected} столбцов, "
+            f"но названий альтернатив только {len(alternative_names)}"
+        )
+    alternatives_cnt = detected
+    alternative_names = alternative_names[:alternatives_cnt]
 
     validate_sizes(criterias_cnt, alternatives_cnt)
 
@@ -271,3 +290,14 @@ def calc_alternative_pairwise(
                 )
         result.append(matrix)
     return result
+
+def count_filled_cells(row: List[str], start_col: int, max_count: int) -> int:
+    count = 0
+    for k in range(max_count):
+        col_idx = start_col + k
+        if col_idx >= len(row):
+            break
+        if not row[col_idx].strip():
+            break
+        count += 1
+    return count
