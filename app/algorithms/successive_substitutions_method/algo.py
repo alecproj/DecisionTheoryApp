@@ -1,8 +1,7 @@
 from typing import List, Tuple
-import numpy as np
 from scipy.optimize import linprog
 
-from .schema import CSMInput
+from .models import CSMInput
 
 
 # ==========================================================
@@ -213,3 +212,4 @@ def run(input_data: CSMInput, reporter) -> None:
         zip(final_z_values, input_data.extremumtype_targetfunctions)
     ):
         reporter.text(f"Z{i+1} ({extremum}) = **{round(z_val, 4)}**")
+

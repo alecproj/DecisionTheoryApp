@@ -1,10 +1,9 @@
 import csv
-import math
 import re
 from dataclasses import dataclass
 from io import StringIO
-from typing import List, Optional, Tuple
-from sympy import symbols, sympify, SympifyError, Mul, Poly
+from typing import List, Tuple
+from sympy import symbols, sympify, SympifyError, Poly
 
 from .models import CSMInput
 
@@ -360,3 +359,4 @@ def _validate_linear(expr, valid_symbols: List[str], label: str) -> None:
         raise ValueError(
             f"{label}: выражение нелинейно — степень выражения {poly.total_degree()}"
         )
+
