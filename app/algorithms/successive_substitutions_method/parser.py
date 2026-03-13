@@ -6,8 +6,7 @@ from io import StringIO
 from typing import List, Optional, Tuple
 from sympy import symbols, sympify, SympifyError, Mul, Poly
 
-from app.algorithms.successive_substitutions_method.schema import CSMInput
-
+from .models import CSMInput
 
 # ==========================================================
 # СТРУКТУРЫ СЫРЫХ ДАННЫХ
