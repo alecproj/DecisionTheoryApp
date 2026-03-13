@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Optional
 from dataclasses import dataclass
-from parser import (
+from .parser import (
     read_csv,
     validate_template,
     parse_criteria_table,
