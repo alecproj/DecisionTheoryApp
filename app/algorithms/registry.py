@@ -6,6 +6,9 @@ from app.algorithms.example.algo import run as example_run
 from app.algorithms.analytic_hierarchy_process.schema import validator as ahp_validate
 from app.algorithms.analytic_hierarchy_process.algo import run as ahp_run
 
+from app.algorithms.successive_substitutions_method.schema import validator as csm_validate
+from app.algorithms.successive_substitutions_method.algo import run as csm_run
+
 
 @dataclass(frozen=True)
 class AlgorithmMeta:
@@ -49,6 +52,21 @@ ALGORITHMS: dict[str, AlgorithmMeta] = {
         validate=ahp_validate,
         run=ahp_run,
     ),
+    "csm": AlgorithmMeta(
+        id="csm",
+        name="Метод последовательных уступок",
+        description=(
+            "Метод последовательных уступок — метод многокритериальной оптимизации. "
+            "На каждом шаге оптимизируется одна целевая функция при фиксированных ограничениях. "
+            "Предыдущая целевая функция допускает ухудшение на заданную величину — уступку. "
+            "Процесс повторяется для каждой функции, накапливая ограничения-уступки. "
+            "Результатом является оптимальное решение с учётом всех критериев и уступок."
+        ),
+        guide_link="/static/guides/csm.md",
+        template_link="/static/templates/csm.csv",
+        validate=csm_validate,
+        run=csm_run,
+),
 }
 
 
