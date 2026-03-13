@@ -43,7 +43,7 @@ async function fetchReport(run_id) {
     return await getJSON("./mocks/report.json");
   }
 
-  return await getJSON(`${API_BASE}/reports/${run_id}`);
+  return await getJSON(`${API_BASE}/api/reports/${run_id}`);
 }
 
 // ================================
