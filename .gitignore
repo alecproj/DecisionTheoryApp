@@ -634,4 +634,4 @@ csm_reporter.py
 ztest_csm.py
 
 start-frontend.ps1
-csm_report.md
+*report.md
