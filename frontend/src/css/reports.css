@@ -30,7 +30,6 @@
 }
 
 body {
-  min-height: 100vh;
   color: var(--text);
   display: flex;
   flex-direction: column;
@@ -38,12 +37,19 @@ body {
   padding: 60px 20px;
   position: relative;
   overflow-x: hidden;
-  overflow-y: hidden;
-  background: linear-gradient(135deg, var(--bg1), var(--bg2), var(--bg3));
+
+  background: linear-gradient(
+    135deg,
+    var(--bg1),
+    var(--bg2),
+    var(--bg3)
+  );
+
+  background-attachment: fixed;
 }
 
 /* ===============================
-   🌌 Фон
+   🌌 Мягкий световой фон
 ================================ */
 body::before,
 body::after {
@@ -58,14 +64,14 @@ body::after {
 }
 
 body::before {
-  background: var(--accent);
+  background: #27cde3;
   top: -150px;
   left: -150px;
 }
 
 body::after {
-  background: var(--accent);
-  bottom: -150px;
+  background: #27cde3;
+  bottom: -300px;
   right: -150px;
 }
 
