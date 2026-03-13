@@ -635,3 +635,4 @@ ztest_csm.py
 
 start-frontend.ps1
 *report.md
+docs/generated/*
