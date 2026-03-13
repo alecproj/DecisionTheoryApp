@@ -3,7 +3,7 @@
 // ================================
 
 const MODE = window.APP_MODE || "real";
-const API_BASE = window.API_BASE || "";
+const API_BASE = window.API_BASE || "/api";
 
 // ================================
 // 🌐 Fetch JSON

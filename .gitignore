@@ -630,7 +630,8 @@ ahp_reporter.py
 test_parse.py
 ztest_ahp.py
 ztest_parse.py
+csm_reporter.py
+ztest_csm.py
 
 start-frontend.ps1
-
-ahp_report.md
+*report.md
