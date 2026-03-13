@@ -1,8 +1,6 @@
 from dataclasses import dataclass
 from typing import Callable, Any
 
-from app.algorithms.example.schema import validate_input
-from app.algorithms.example.algo import run as example_run
 from app.algorithms.analytic_hierarchy_process.schema import validator as ahp_validate
 from app.algorithms.analytic_hierarchy_process.algo import run as ahp_run
 
@@ -22,21 +20,6 @@ class AlgorithmMeta:
 
 
 ALGORITHMS: dict[str, AlgorithmMeta] = {
-    "example": AlgorithmMeta(
-        id="example",
-        name="Пример (a+b)",
-        description=(
-            "Учебный алгоритм для демонстрации работы системы. "
-            "Принимает на вход CSV-файл с двумя числовыми колонками a и b. "
-            "Вычисляет сумму двух чисел и формирует отчёт с результатом. "
-            "Используется для проверки корректности загрузки файлов и генерации отчётов. "
-            "Не предназначен для решения реальных задач принятия решений."
-        ),
-        guide_link="/static/guides/example.md",
-        template_link="/static/templates/example.csv",
-        validate=validate_input,
-        run=example_run,
-    ),
     "ahp": AlgorithmMeta(
         id="ahp",
         name="Метод анализа иерархий",
@@ -47,8 +30,8 @@ ALGORITHMS: dict[str, AlgorithmMeta] = {
             "Метод включает проверку согласованности суждений эксперта через индекс консистентности. "
             "Результатом является ранжированный список альтернатив с указанием итоговых весов."
         ),
-        guide_link="/static/guides/ahp.md",
-        template_link="/static/templates/ahp.csv",
+        guide_link="https://e.pcloud.link/publink/show?code=kZzCRGZR8MswbjXsJ4BmLwKhK7Uluo5sufk",
+        template_link="https://e.pcloud.link/publink/show?code=kZqCRGZXdeY3zylF4H4YyoTAczwGhEqfS7y",
         validate=ahp_validate,
         run=ahp_run,
     ),
@@ -62,13 +45,12 @@ ALGORITHMS: dict[str, AlgorithmMeta] = {
             "Процесс повторяется для каждой функции, накапливая ограничения-уступки. "
             "Результатом является оптимальное решение с учётом всех критериев и уступок."
         ),
-        guide_link="/static/guides/csm.md",
-        template_link="/static/templates/csm.csv",
+        guide_link="https://e.pcloud.link/publink/show?code=kZKCRGZORyoi01y9zFRwwiOT0nwwLuP7qGV",
+        template_link="https://e.pcloud.link/publink/show?code=kZ6CRGZicE4kgj8Y4pqzPP766GlI730u1Qy",
         validate=csm_validate,
         run=csm_run,
 ),
 }
-
 
 def list_algorithms() -> list[dict]:
     return [

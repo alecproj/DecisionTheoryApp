@@ -47,11 +47,11 @@ function renderAlgorithm(a) {
   const videoEl = document.getElementById("guide-video");
 
   if (a.guide_link) {
-    guideEl.href = `${API_BASE}${a.guide_link}`;
+    guideEl.href = `${a.guide_link}`;
   }
 
   if (a.template_link) {
-    templateEl.href = `${API_BASE}${a.template_link}`;
+    templateEl.href = `${a.template_link}`;
   }
 
   // YouTube embed
