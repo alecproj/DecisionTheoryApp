@@ -1,8 +1,6 @@
 from dataclasses import dataclass
 from typing import Callable, Any
 
-from app.algorithms.example.schema import validate_input
-from app.algorithms.example.algo import run as example_run
 from app.algorithms.analytic_hierarchy_process.schema import validator as ahp_validate
 from app.algorithms.analytic_hierarchy_process.algo import run as ahp_run
 
@@ -22,21 +20,6 @@ class AlgorithmMeta:
 
 
 ALGORITHMS: dict[str, AlgorithmMeta] = {
-    "example": AlgorithmMeta(
-        id="example",
-        name="Пример (a+b)",
-        description=(
-            "Учебный алгоритм для демонстрации работы системы. "
-            "Принимает на вход CSV-файл с двумя числовыми колонками a и b. "
-            "Вычисляет сумму двух чисел и формирует отчёт с результатом. "
-            "Используется для проверки корректности загрузки файлов и генерации отчётов. "
-            "Не предназначен для решения реальных задач принятия решений."
-        ),
-        guide_link="/static/guides/example.md",
-        template_link="/static/templates/example.csv",
-        validate=validate_input,
-        run=example_run,
-    ),
     "ahp": AlgorithmMeta(
         id="ahp",
         name="Метод анализа иерархий",
@@ -48,7 +31,7 @@ ALGORITHMS: dict[str, AlgorithmMeta] = {
             "Результатом является ранжированный список альтернатив с указанием итоговых весов."
         ),
         guide_link="/static/guides/ahp.md",
-        template_link="/static/templates/ahp.csv",
+        template_link="https://e.pcloud.link/publink/show?code=kZx9RGZdpxod4mGzOuiaq57sGwYFBlHqgTV",
         validate=ahp_validate,
         run=ahp_run,
     ),
@@ -63,12 +46,11 @@ ALGORITHMS: dict[str, AlgorithmMeta] = {
             "Результатом является оптимальное решение с учётом всех критериев и уступок."
         ),
         guide_link="/static/guides/csm.md",
-        template_link="/static/templates/csm.csv",
+        template_link="https://e.pcloud.link/publink/show?code=kZq9RGZLMooMJr1I1SrDwxeLnypKYzbihay",
         validate=csm_validate,
         run=csm_run,
 ),
 }
-
 
 def list_algorithms() -> list[dict]:
     return [

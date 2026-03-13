@@ -51,7 +51,7 @@ function renderAlgorithm(a) {
   }
 
   if (a.template_link) {
-    templateEl.href = `${API_BASE}${a.template_link}`;
+    templateEl.href = `${a.template_link}`;
   }
 
   // YouTube embed
