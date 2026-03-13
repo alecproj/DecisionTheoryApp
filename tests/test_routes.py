@@ -19,8 +19,62 @@ def client():
 
     return app.test_client()
 
-# Минимальный валидный CSV для алгоритма ahp
-EXAMPLE_CSV = b"a,b\n2,3\n"
+
+# Минимальный валидный CSV для алгоритма csm
+# 2 переменные, 2 целевые функции (max/min), 1 уступка, 2 ограничения
+# Структура шаблона:
+#   A1      = CSM (сигнатура)
+#   F3      = 2  (variable_cnt)
+#   C11:F13 = целевые функции (функция ; правая часть ; 0/1 ; уступка)
+#   B17     = CSM (сигнатура)
+#   C20:E39 = ограничения (функция ; знак ; правая часть)
+#   F39     = CSM (сигнатура)
+def _make_csm_csv(variable_cnt="2",
+                  tf_rows=None,
+                  constr_rows=None) -> bytes:
+    """
+    Собирает минимальный валидный CSM-шаблон (разделитель ;).
+    tf_rows    — список строк [func, right, is_max, concession] для C11:F13 (макс 3)
+    constr_rows — список строк [func, sign, right] для C20:E39 (макс 20)
+    """
+    if tf_rows is None:
+        tf_rows = [
+            ["x1+x2", "0", "1", "5"],   # Z1 = x1+x2 → max, уступка 5
+            ["x1-x2", "0", "0", ""],    # Z2 = x1-x2 → min, уступка пустая (последняя)
+        ]
+    if constr_rows is None:
+        constr_rows = [
+            ["x1+x2", "<=", "10"],
+            ["x1",    "<=", "6"],
+        ]
+
+    # 40 строк минимум (F39 = строка 39, индекс 38)
+    rows = [[""] * 10 for _ in range(40)]
+
+    # Сигнатуры
+    rows[0][0]  = "CSM"   # A1
+    rows[16][1] = "CSM"   # B17
+    rows[38][5] = "CSM"   # F39
+
+    # Количество переменных в F3 (индекс [2][5])
+    rows[2][5] = variable_cnt
+
+    # Целевые функции C11:F13 (rows[10:13], cols 2..5)
+    for i, tf in enumerate(tf_rows[:3]):
+        for j, val in enumerate(tf[:4]):
+            rows[10 + i][2 + j] = val
+
+    # Ограничения C20:E39 (rows[19:39], cols 2..4)
+    for i, c in enumerate(constr_rows[:20]):
+        for j, val in enumerate(c[:3]):
+            rows[19 + i][2 + j] = val
+
+    lines = [";".join(row) for row in rows]
+    return "\n".join(lines).encode("utf-8")
+
+
+CSM_CSV = _make_csm_csv()
+
 AHP_CSV = """\
 AHP;Легенда;;;;;;Сравнительная таблица важности критериев относительно друг друга;;;;;;;;;;;;;;;;;;;;
 ;Цвет;Тип пользовательского ввода;;;;;;ЦЕНА;РАЗМЕР;КОМНАТЫ;БЛИЗОСТЬ;КАТЕГОРИЯ;0;0;0;0;;;;;;;;;;;
@@ -54,6 +108,23 @@ AHP;;;;;;;Значения критериев;;;;;;;;;;;;;;;;;;;;
 """.encode("utf-8")
 
 
+def _post_csm_run(client, csv_bytes=None,
+                  report_name="Тестовый CSM отчёт", filename="csm.csv"):
+    """Вспомогательная функция для отправки CSM-запроса."""
+    if csv_bytes is None:
+        csv_bytes = CSM_CSV
+    data = {}
+    if report_name is not None:
+        data["report_name"] = report_name
+    if csv_bytes is not None:
+        data["file"] = (io.BytesIO(csv_bytes), filename)
+    return client.post(
+        "/api/runs/csm",
+        data=data,
+        content_type="multipart/form-data",
+    )
+
+
 def _post_ahp_run(client, csv_bytes=AHP_CSV,
                   report_name="Тестовый AHP отчёт", filename="ahp.csv"):
     """Вспомогательная функция для отправки AHP-запроса."""
@@ -68,9 +139,13 @@ def _post_ahp_run(client, csv_bytes=AHP_CSV,
         content_type="multipart/form-data",
     )
 
-def _post_run(client, algorithm_id, csv_bytes=EXAMPLE_CSV,
+
+def _post_run(client, algorithm_id, csv_bytes=None,
               report_name="Тестовый отчёт", filename="data.csv"):
     """Вспомогательная функция для отправки multipart-запроса."""
+    if csv_bytes is None:
+        csv_bytes = CSM_CSV
+        filename = "data.csv"
     data = {}
     if report_name is not None:
         data["report_name"] = report_name
@@ -111,37 +186,40 @@ def test_list_algorithms_each_item_has_required_fields(client):
 # ══════════════════════════════════════════════════════════════
 
 def test_run_missing_report_name_returns_400(client):
-    """POST /api/runs/example без report_name: 400 REPORT_NAME_MISSING."""
-    r = _post_run(client, "example", report_name=None)
+    """POST /api/runs/csm без report_name: 400 REPORT_NAME_MISSING."""
+    r = _post_csm_run(client, report_name=None)
     assert r.status_code == 400
     assert r.json["code"] == "REPORT_NAME_MISSING"
 
 def test_run_empty_report_name_returns_400(client):
-    """POST /api/runs/example с пустым report_name (пробелы): 400."""
-    r = _post_run(client, "example", report_name="   ")
+    """POST /api/runs/csm с пустым report_name (пробелы): 400."""
+    r = _post_csm_run(client, report_name="   ")
     assert r.status_code == 400
 
 def test_run_missing_file_returns_400(client):
-    """POST /api/runs/example без файла: 400 FILE_MISSING."""
-    r = _post_run(client, "example", csv_bytes=None)
+    """POST /api/runs/csm без файла: 400 FILE_MISSING."""
+    r = _post_csm_run(client, csv_bytes=None, report_name="Отчёт")
+    # переопределяем: не передаём файл вовсе
+    data = {"report_name": "Отчёт"}
+    r = client.post("/api/runs/csm", data=data, content_type="multipart/form-data")
     assert r.status_code == 400
     assert r.json["code"] == "FILE_MISSING"
 
 def test_run_non_csv_extension_returns_400(client):
-    """POST /api/runs/example с файлом .goida: 400 INVALID_FILE_FORMAT."""
-    r = _post_run(client, "example", csv_bytes=b"a,b\n1,2", filename="data.goida")
+    """POST /api/runs/csm с файлом .goida: 400 INVALID_FILE_FORMAT."""
+    r = _post_csm_run(client, csv_bytes=CSM_CSV, filename="data.goida")
     assert r.status_code == 400
     assert r.json["code"] == "INVALID_FILE_FORMAT"
 
 def test_run_empty_file_returns_400(client):
-    """POST /api/runs/example с пустым файлом: 400 FILE_EMPTY."""
-    r = _post_run(client, "example", csv_bytes=b"")
+    """POST /api/runs/csm с пустым файлом: 400 FILE_EMPTY."""
+    r = _post_csm_run(client, csv_bytes=b"")
     assert r.status_code == 400
     assert r.json["code"] == "FILE_EMPTY"
 
 def test_run_invalid_csv_content_returns_400(client):
-    """POST /api/runs/example с CSV без нужных колонок (a, b): 400 VALIDATION_ERROR."""
-    r = _post_run(client, "example", csv_bytes=b"x,y\n1,2")
+    """POST /api/runs/csm с CSV без сигнатуры CSM: 400 VALIDATION_ERROR."""
+    r = _post_csm_run(client, csv_bytes=b"x,y\n1,2")
     assert r.status_code == 400
     assert r.json["code"] == "VALIDATION_ERROR"
 
@@ -160,19 +238,19 @@ def test_run_unknown_algorithm_returns_404(client):
 # POST /api/runs/{algorithm_id} — успешный запуск (201)
 # ══════════════════════════════════════════════════════════════
 
-def test_run_example_success_response_shape(client):
-    """POST /api/runs/example: 201 и поля algorithm_id, run_id, report_name."""
-    r = _post_run(client, "example", report_name="Мой отчёт")
+def test_run_csm_success_response_shape(client):
+    """POST /api/runs/csm: 201 и поля algorithm_id, run_id, report_name."""
+    r = _post_csm_run(client, report_name="Мой отчёт")
     assert r.status_code == 201
-    assert r.json["algorithm_id"] == "example"
+    assert r.json["algorithm_id"] == "csm"
     assert r.json["report_name"] == "Мой отчёт"
     assert isinstance(r.json.get("run_id"), str)
     assert len(r.json["run_id"]) > 0
 
 def test_run_produces_unique_run_ids(client):
     """Два последовательных запуска возвращают разные run_id."""
-    r1 = _post_run(client, "example")
-    r2 = _post_run(client, "example")
+    r1 = _post_csm_run(client)
+    r2 = _post_csm_run(client)
     assert r1.json["run_id"] != r2.json["run_id"]
 
 
@@ -197,9 +275,10 @@ def test_get_report_nonexistent_run_id(client):
 # GET /api/reports/{run_id} — успешное получение отчёта (200)
 # ══════════════════════════════════════════════════════════════
 
-def test_get_report_example(client):
-    """Полный цикл example: 200, поля run_id/report_name/markdown, содержимое Result и a+b."""
-    run_r = _post_run(client, "example", report_name="Имя отчёта")
+def test_get_report_csm(client):
+    """Полный цикл csm: 200, поля run_id/report_name/markdown, содержимое МПУ и переменных."""
+    run_r = _post_csm_run(client, report_name="Имя отчёта")
+    assert run_r.status_code == 201
     run_id = run_r.json["run_id"]
 
     r = client.get(f"/api/reports/{run_id}")
@@ -209,8 +288,8 @@ def test_get_report_example(client):
     assert r.json["run_id"] == run_id
     assert r.json["report_name"] == "Имя отчёта"
     assert isinstance(md, str)
-    assert "Result" in md
-    assert "a+b" in md
+    assert "Последовательных уступок" in md or "МПУ" in md or "уступок" in md.lower()
+    assert "x1" in md
 
 
 # ══════════════════════════════════════════════════════════════
@@ -252,7 +331,8 @@ def test_list_reports_new_run_appears_in_list(client):
     """После создания запуска отчёт появляется в списке, total увеличивается на 1, элемент содержит run_id и report_name."""
     total_before = client.get("/api/reports").json["total"]
 
-    run_r = _post_run(client, "example", report_name="Проверка списка")
+    run_r = _post_csm_run(client, report_name="Проверка списка")
+    assert run_r.status_code == 201
     run_id = run_r.json["run_id"]
 
     r = client.get("/api/reports")
@@ -327,8 +407,3 @@ def test_ahp_run_invalid_csv_no_ahp_signature_returns_400(client):
 #    assert "КВАРТИРА 3" in md
 #    assert "CR" in md
 #    assert "Итоговые рейтинги" in md
-
-
-#===================================== short test summary info ===================================== 
-#FAILED tests/test_routes.py::test_ahp_run_success_response_shape - assert 400 == 201
-#FAILED tests/test_routes.py::test_ahp_report_markdown_content - KeyError: 'run_id'
