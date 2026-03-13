@@ -1,7 +1,7 @@
 import csv
 import math
 from io import StringIO
-from typing import List, Tuple, Optional
+from typing import List, Tuple
 
 # ==========================================================
 # БАЗОВЫЕ УТИЛИТЫ
