@@ -59,12 +59,32 @@ def _normalize_function_str(expr: str) -> str:
 # ==========================================================
 
 def read_csv(csv_text: str) -> List[List[str]]:
-    f = StringIO(csv_text.strip())
-    reader = csv.reader(f, delimiter=';')
+    if not isinstance(csv_text, str):
+        raise ValueError(f"Ожидается строка, получено: {type(csv_text).__name__}")
+
+    csv_text = csv_text.lstrip('\ufeff').strip()
+    if not csv_text:
+        raise ValueError("CSV пустой")
+
+    sample = csv_text[:4096]
+
+    try:
+        dialect = csv.Sniffer().sniff(sample, delimiters=',;')
+        delimiter = dialect.delimiter
+    except csv.Error:
+        delimiter = ','
+
+    f = StringIO(csv_text)
+    reader = csv.reader(f, delimiter=delimiter)
+
     rows = [
-        [cell.strip().replace('#ДЕЛ/0!', '').replace('#DIV/0!', '') for cell in r]
-        for r in reader
+        [cell.strip().replace('#ДЕЛ/0!', '').replace('#DIV/0!', '') for cell in row]
+        for row in reader
     ]
+
+    if len(rows) < 5:
+        raise ValueError("CSV слишком короткий")
+
     return rows
 
 # ==========================================================
