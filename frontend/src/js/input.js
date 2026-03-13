@@ -47,7 +47,7 @@ function renderAlgorithm(a) {
   const videoEl = document.getElementById("guide-video");
 
   if (a.guide_link) {
-    guideEl.href = `${API_BASE}${a.guide_link}`;
+    guideEl.href = `${a.guide_link}`;
   }
 
   if (a.template_link) {

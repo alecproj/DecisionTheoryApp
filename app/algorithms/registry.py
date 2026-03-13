@@ -30,8 +30,8 @@ ALGORITHMS: dict[str, AlgorithmMeta] = {
             "Метод включает проверку согласованности суждений эксперта через индекс консистентности. "
             "Результатом является ранжированный список альтернатив с указанием итоговых весов."
         ),
-        guide_link="/static/guides/ahp.md",
-        template_link="https://e.pcloud.link/publink/show?code=kZx9RGZdpxod4mGzOuiaq57sGwYFBlHqgTV",
+        guide_link="https://e.pcloud.link/publink/show?code=kZzCRGZR8MswbjXsJ4BmLwKhK7Uluo5sufk",
+        template_link="https://e.pcloud.link/publink/show?code=kZqCRGZXdeY3zylF4H4YyoTAczwGhEqfS7y",
         validate=ahp_validate,
         run=ahp_run,
     ),
@@ -45,8 +45,8 @@ ALGORITHMS: dict[str, AlgorithmMeta] = {
             "Процесс повторяется для каждой функции, накапливая ограничения-уступки. "
             "Результатом является оптимальное решение с учётом всех критериев и уступок."
         ),
-        guide_link="/static/guides/csm.md",
-        template_link="https://e.pcloud.link/publink/show?code=kZq9RGZLMooMJr1I1SrDwxeLnypKYzbihay",
+        guide_link="https://e.pcloud.link/publink/show?code=kZKCRGZORyoi01y9zFRwwiOT0nwwLuP7qGV",
+        template_link="https://e.pcloud.link/publink/show?code=kZ6CRGZicE4kgj8Y4pqzPP766GlI730u1Qy",
         validate=csm_validate,
         run=csm_run,
 ),
