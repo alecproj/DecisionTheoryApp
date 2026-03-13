@@ -100,13 +100,49 @@ h1 {
   color: var(--muted);
 }
 
-/* Таблица */
+.report-card .table-wrapper {
+  overflow-x: auto;      /* Горизонтальный скролл, если таблица шире */
+  max-width: 100%;       /* Не вылезает за карточку */
+  margin: 15px 0;        /* Отступ сверху/снизу */
+  border-radius: 12px;   /* Чтобы скролл выглядел аккуратно */
+}
+
 .report-card table {
-  width: 100%;
-  border-collapse: collapse;
+  width: max-content;    /* Таблица занимает столько, сколько нужно, чтобы скроллилась */
+  min-width: 100%;       /* Минимальная ширина — 100% карточки */
+}
+
+/* Обёртка для таблиц с горизонтальным скроллом */
+.table-wrapper {
+  overflow-x: auto;
   margin-top: 15px;
   border-radius: 12px;
-  overflow: hidden;
+}
+
+/* Стилизация полосы прокрутки для Webkit (Chrome, Edge, Safari) */
+.table-wrapper::-webkit-scrollbar {
+  height: 8px; /* горизонтальный скролл */
+}
+
+.table-wrapper::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.3); /* цвет фона полосы */
+  border-radius: 8px;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb {
+  background-color: rgba(39, 205, 227, 0.6); /* цвет ползунка */
+  border-radius: 8px;
+  border: 2px solid rgba(15, 23, 42, 0.3); /* немного отступа вокруг */
+}
+
+.table-wrapper::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(39, 205, 227, 0.9); /* при наведении */
+}
+
+/* Firefox */
+.table-wrapper {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(39, 205, 227, 0.6) rgba(15, 23, 42, 0.3);
 }
 
 .report-card td {

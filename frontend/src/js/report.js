@@ -111,7 +111,20 @@ function simpleMarkdown(md) {
 
     html = tableHTML;
   }
+  // создаем временный div
+  const tempDiv = document.createElement("div");
+  tempDiv.innerHTML = html;
 
+  // оборачиваем каждую таблицу в .table-wrapper
+  tempDiv.querySelectorAll("table").forEach(tbl => {
+     const wrapper = document.createElement("div");
+     wrapper.className = "table-wrapper";
+     tbl.parentNode.insertBefore(wrapper, tbl);
+     wrapper.appendChild(tbl);
+  });
+
+  // обновляем html
+  html = tempDiv.innerHTML;
   return html;
 }
 
