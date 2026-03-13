@@ -98,6 +98,10 @@ b {
   color: var(--accent);
 }
 
+#algorithm-description {
+  text-align: justify; 
+}
+
 /* ===============================
    📦 Форма (карточка)
 ================================ */
