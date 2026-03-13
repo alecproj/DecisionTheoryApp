@@ -4,13 +4,13 @@ from flask import Flask, send_from_directory, Response
 from app.api.algorithms import bp as algorithms_bp
 from app.api.runs import bp as runs_bp
 from app.api.reports import bp as reports_bp
-
+from flask_cors import CORS
 
 def create_app() -> Flask:
     frontend_dir = os.environ.get("FRONTEND_DIR", "/app/frontend")
 
     app = Flask(__name__, static_folder=frontend_dir, static_url_path="")
-
+    CORS(app)
     app.register_blueprint(algorithms_bp)
     app.register_blueprint(runs_bp)
     app.register_blueprint(reports_bp)

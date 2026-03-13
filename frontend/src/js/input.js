@@ -30,7 +30,7 @@ async function fetchAlgorithms() {
     return await getJSON("./mocks/algorithms.json");
   }
 
-  return await getJSON(`${API_BASE}/algorithms`);
+  return await getJSON(`${API_BASE}/api/algorithms`);
 }
 
 // ================================
@@ -121,7 +121,7 @@ async function createRunWithFile(algorithm_id, report_name, file) {
   formData.append("report_name", report_name);
   formData.append("file", file);
 
-  const r = await fetch(`${API_BASE}/runs/${algorithm_id}`, {
+  const r = await fetch(`${API_BASE}/api/runs/${algorithm_id}`, {
     method: "POST",
     body: formData
   });

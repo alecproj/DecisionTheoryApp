@@ -5,6 +5,7 @@ description = "Flask app for decision theory algorithms"
 requires-python = ">=3.12"
 dependencies = [
   "flask>=3.0.0",
+  "flask-cors>=4.0.0",
   "pymongo>=4.7.0",
   "gunicorn>=22.0.0",
   "markdown>=3.6",
