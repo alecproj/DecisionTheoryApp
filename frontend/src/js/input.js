@@ -68,38 +68,6 @@ function renderAlgorithm(a) {
 }
 
 // ================================
-// 📄 Excel → CSV
-// ================================
-
-async function fileToCSV(file) {
-
-  const name = file.name.toLowerCase();
-
-  if (name.endsWith(".csv")) {
-    return file;
-  }
-
-  if (name.endsWith(".xlsx") || name.endsWith(".xls")) {
-
-    const data = await file.arrayBuffer();
-
-    const workbook = XLSX.read(data);
-
-    const sheet = workbook.Sheets[workbook.SheetNames[0]];
-
-    const csv = XLSX.utils.sheet_to_csv(sheet);
-
-    return new File(
-      [csv],
-      file.name.replace(/\.(xlsx|xls)$/i, ".csv"),
-      { type: "text/csv" }
-    );
-  }
-
-  throw new Error("Поддерживаются только CSV или Excel файлы");
-}
-
-// ================================
 // 🚀 Создание run
 // ================================
 
@@ -296,13 +264,10 @@ async function initInput() {
     message.className = "";
 
     try {
-
-      const csvFile = await fileToCSV(selectedFile);
-
       const run = await createRunWithFile(
         algId,
         report_name,
-        csvFile
+        selectedFile
       );
 
       localStorage.setItem("run_id", run.run_id);

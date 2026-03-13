@@ -1,12 +1,30 @@
 from datetime import datetime, timezone
+from io import BytesIO, StringIO
+import csv
+import os
+
 from bson import ObjectId
 from flask import Blueprint, request
+from openpyxl import load_workbook
 
 from app.algorithms.registry import get_algorithm
 from app.reporting.reporter import MarkdownReporter
 from app.db.mongo import inputs_col, reports_col
 
 bp = Blueprint("runs_api", __name__, url_prefix="/api")
+
+
+def xlsx_bytes_to_csv_text(file_bytes: bytes) -> str:
+    wb = load_workbook(filename=BytesIO(file_bytes), data_only=True)
+    ws = wb[wb.sheetnames[0]]
+
+    output = StringIO()
+    writer = csv.writer(output, lineterminator="\n")
+
+    for row in ws.iter_rows(values_only=True):
+        writer.writerow(["" if value is None else str(value) for value in row])
+
+    return output.getvalue()
 
 
 @bp.post("/runs/<algorithm_id>")
@@ -23,8 +41,14 @@ def runs_create(algorithm_id: str):
     if file.filename == "":
         return {"error": "Файл не выбран", "code": "FILE_MISSING"}, 400
 
-    if not file.filename.endswith(".csv"):
-        return {"error": "Неверный формат файла. Ожидается CSV", "code": "INVALID_FILE_FORMAT"}, 400
+    filename = file.filename
+    ext = os.path.splitext(filename)[1].lower()
+
+    if ext not in {".csv", ".xlsx"}:
+        return {
+            "error": "Неверный формат файла. Ожидается CSV или XLSX",
+            "code": "INVALID_FILE_FORMAT"
+        }, 400
 
     file_bytes = file.read()
 
@@ -36,7 +60,27 @@ def runs_create(algorithm_id: str):
     except KeyError:
         return {"error": f"Алгоритм '{algorithm_id}' не найден", "code": "ALGORITHM_NOT_FOUND"}, 404
 
-    file_content = file_bytes.decode("utf-8-sig")
+    try:
+        if ext == ".csv":
+            file_content = file_bytes.decode("utf-8-sig")
+        elif ext == ".xlsx":
+            file_content = xlsx_bytes_to_csv_text(file_bytes)
+            print(file_content, flush=True)
+        else:
+            return {
+                "error": "Неподдерживаемый формат файла",
+                "code": "INVALID_FILE_FORMAT"
+            }, 400
+    except UnicodeDecodeError:
+        return {
+            "error": "CSV должен быть в кодировке UTF-8",
+            "code": "INVALID_ENCODING"
+        }, 400
+    except Exception as e:
+        return {
+            "error": f"Ошибка чтения Excel файла: {e}",
+            "code": "EXCEL_READ_ERROR"
+        }, 400
 
     try:
         typed_input = algo.validate(file_content)
@@ -57,7 +101,7 @@ def runs_create(algorithm_id: str):
     inputs_col().insert_one({
         "algorithm_id": algo.id,
         "run_id": run_id,
-        "filename": file.filename,
+        "filename": filename,
         "file": file_content,
         "created_at": now,
     })
@@ -75,3 +119,4 @@ def runs_create(algorithm_id: str):
         "run_id": str(run_id),
         "report_name": report_name,
     }, 201
+
