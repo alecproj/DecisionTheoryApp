@@ -49,7 +49,7 @@ async function fetchReports(page = DEFAULT_PAGE, pageSize = DEFAULT_PAGE_SIZE) {
   }
 
   const url =
-    `${API_BASE}/reports?page=${page}&page_size=${pageSize}`;
+    `${API_BASE}/api/reports?page=${page}&page_size=${pageSize}`;
 
   return await getJSON(url);
 }
