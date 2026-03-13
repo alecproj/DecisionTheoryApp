@@ -65,7 +65,6 @@ def runs_create(algorithm_id: str):
             file_content = file_bytes.decode("utf-8-sig")
         elif ext == ".xlsx":
             file_content = xlsx_bytes_to_csv_text(file_bytes)
-            print(file_content, flush=True)
         else:
             return {
                 "error": "Неподдерживаемый формат файла",
