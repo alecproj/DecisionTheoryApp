@@ -1,5 +1,5 @@
 const MODE = window.APP_MODE || "real";
-const API_BASE = window.API_BASE || "";
+const API_BASE = window.API_BASE || "/api";
 
 async function getJSON(url) {
   const r = await fetch(url);
@@ -11,7 +11,7 @@ async function fetchAlgorithms() {
   if (MODE === "mock") {
     return await getJSON("./mocks/algorithms.json");
   }
-  return await getJSON(`${API_BASE}/api/algorithms`);
+  return await getJSON(`${API_BASE}/algorithms`);
 }
 
 async function initIndex() {
