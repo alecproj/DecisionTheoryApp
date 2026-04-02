@@ -7,6 +7,9 @@ from app.algorithms.analytic_hierarchy_process.algo import run as ahp_run
 from app.algorithms.successive_substitutions_method.schema import validator as csm_validate
 from app.algorithms.successive_substitutions_method.algo import run as csm_run
 
+from app.algorithms.two_player_games.parser import validate_input as tpg_validate
+from app.algorithms.two_player_games.algo import run as tpg_run
+
 
 @dataclass(frozen=True)
 class AlgorithmMeta:
@@ -49,7 +52,23 @@ ALGORITHMS: dict[str, AlgorithmMeta] = {
         template_link="https://e.pcloud.link/publink/show?code=kZ6CRGZicE4kgj8Y4pqzPP766GlI730u1Qy",
         validate=csm_validate,
         run=csm_run,
-),
+    ),
+    "tpg": AlgorithmMeta(
+        id="tpg",
+        name="Теория игр — Парные игры",
+        description=(
+            "Парные игры в нормальной форме используются для анализа стратегического взаимодействия двух игроков, "
+            "когда результат зависит от выбора стратегий обеих сторон. "
+            "Каждому сочетанию стратегий соответствует пара выигрышей: для первого и второго игрока. "
+            "Для поиска устойчивых решений используется равновесие Нэша, которое показывает такие стратегии, "
+            "при которых ни одному игроку невыгодно односторонне менять своё решение. "
+            "Результатом является найденное равновесие или набор равновесий с указанием, являются ли стратегии чистыми или смешанными."
+        ),
+        guide_link="https://example.com",
+        template_link="https://example.com",
+        validate=tpg_validate,
+        run=tpg_run,
+    ),
 }
 
 def list_algorithms() -> list[dict]:
