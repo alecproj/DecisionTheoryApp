@@ -204,26 +204,36 @@ def _parse_state_names(rows: List[List[str]], states_count: int) -> list[str]:
 
 
 def _validate_matrix_labels(
-    rows: List[List[str]],
-    strategies_count: int,
-    states_count: int,
+        rows: List[List[str]],
+        strategies_count: int,
+        states_count: int,
 ) -> None:
     for i in range(strategies_count):
-        expected = f"С{i + 1}"
-        actual = _get_cell(rows, 3 + i, 7)  # H
+        expected = _get_cell(rows, 10 + i, 2)  # C11:C...
+        actual = _get_cell(rows, 3 + i, 7)  # H4:H...
+
+        if expected == "":
+            raise ValueError(f"Не заполнено название стратегии {i + 1}")
+
         if actual != expected:
             raise ValueError(
-                f"Неверный шаблон платёжной матрицы: ожидалось '{expected}' "
-                f"в строке {i + 4}, столбце H"
+                f"Неверная подпись строки платёжной матрицы: "
+                f"ожидалось '{expected}' в строке {i + 4}, столбце H, "
+                f"получено '{actual}'"
             )
 
     for j in range(states_count):
-        expected = f"У{j + 1}"
+        expected = _get_cell(rows, 10 + j, 5)  # F11:F...
         actual = _get_cell(rows, 2, 8 + j)  # I3:Z3
+
+        if expected == "":
+            raise ValueError(f"Не заполнено название состояния природы {j + 1}")
+
         if actual != expected:
             raise ValueError(
-                f"Неверный шаблон платёжной матрицы: ожидалось '{expected}' "
-                f"в строке 3, столбце {8 + j + 1}"
+                f"Неверная подпись столбца платёжной матрицы: "
+                f"ожидалось '{expected}' в строке 3, столбце {8 + j + 1}, "
+                f"получено '{actual}'"
             )
 
 
