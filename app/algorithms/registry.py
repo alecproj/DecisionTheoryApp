@@ -64,8 +64,8 @@ ALGORITHMS: dict[str, AlgorithmMeta] = {
             "при которых ни одному игроку невыгодно односторонне менять своё решение. "
             "Результатом является найденное равновесие или набор равновесий с указанием, являются ли стратегии чистыми или смешанными."
         ),
-        guide_link="https://example.com",
-        template_link="https://example.com",
+        guide_link="https://e.pcloud.link/publink/show?code=kZhOMvZw2PnpTD0TpQYgxQQ7rc2rYrRj097",
+        template_link=" https://e.pcloud.link/publink/show?code=kZaEMvZuWxKK1GQyWkTuhkA3z0xQ5lQrQfy",
         validate=tpg_validate,
         run=tpg_run,
     ),
