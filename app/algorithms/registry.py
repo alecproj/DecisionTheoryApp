@@ -64,8 +64,8 @@ ALGORITHMS: dict[str, AlgorithmMeta] = {
             "а критерий Гурвица позволяет учитывать степень оптимизма через специальный параметр. "
             "Результатом является выбранная оптимальная стратегия по каждому критерию и сравнительная оценка альтернатив."
         ),
-        guide_link="https://example.com",
-        template_link="https://example.com",
+        guide_link="https://e.pcloud.link/publink/show?code=kZeOMvZkJVGvXPFw9kWlh0chd9zKulP56Bk",
+        template_link="https://e.pcloud.link/publink/show?code=kZKOMvZ9g8QpYmj0iRE0u4eYUiDc86jQB97",
         validate=duu_validate,
         run=duu_run,
     ),
