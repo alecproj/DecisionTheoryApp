@@ -7,6 +7,9 @@ from app.algorithms.analytic_hierarchy_process.algo import run as ahp_run
 from app.algorithms.successive_substitutions_method.schema import validator as csm_validate
 from app.algorithms.successive_substitutions_method.algo import run as csm_run
 
+from app.algorithms.decision_under_uncertainty.parser import validate_input as duu_validate
+from app.algorithms.decision_under_uncertainty.algo import run as duu_run
+
 
 @dataclass(frozen=True)
 class AlgorithmMeta:
@@ -49,8 +52,25 @@ ALGORITHMS: dict[str, AlgorithmMeta] = {
         template_link="https://e.pcloud.link/publink/show?code=kZ6CRGZicE4kgj8Y4pqzPP766GlI730u1Qy",
         validate=csm_validate,
         run=csm_run,
-),
+    ),
+    "duu": AlgorithmMeta(
+        id="duu",
+        name="Теория Игр — Игры с природой",
+        description=(
+            "Методы принятия решений в условиях неопределённости используются для выбора оптимальной стратегии "
+            "при отсутствии вероятностей состояний природы. "
+            "Альтернативы оцениваются на основе платежной таблицы, отражающей возможные результаты при различных условиях. "
+            "Критерий Вальда ориентирован на наихудший исход, критерий Сэвиджа минимизирует возможное сожаление, "
+            "а критерий Гурвица позволяет учитывать степень оптимизма через специальный параметр. "
+            "Результатом является выбранная оптимальная стратегия по каждому критерию и сравнительная оценка альтернатив."
+        ),
+        guide_link="https://e.pcloud.link/publink/show?code=kZeOMvZkJVGvXPFw9kWlh0chd9zKulP56Bk",
+        template_link="https://e.pcloud.link/publink/show?code=kZKOMvZ9g8QpYmj0iRE0u4eYUiDc86jQB97",
+        validate=duu_validate,
+        run=duu_run,
+    ),
 }
+
 
 def list_algorithms() -> list[dict]:
     return [
@@ -69,3 +89,4 @@ def get_algorithm(algorithm_id: str) -> AlgorithmMeta:
     if algorithm_id not in ALGORITHMS:
         raise KeyError(f"Unknown algorithm_id: {algorithm_id}")
     return ALGORITHMS[algorithm_id]
+
