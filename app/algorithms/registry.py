@@ -14,7 +14,6 @@ from app.algorithms.decision_under_uncertainty.parser import validate_input as d
 from app.algorithms.decision_under_uncertainty.algo import run as duu_run
 
 
-
 @dataclass(frozen=True)
 class AlgorithmMeta:
     id: str
@@ -72,6 +71,7 @@ ALGORITHMS: dict[str, AlgorithmMeta] = {
         template_link=" https://e.pcloud.link/publink/show?code=kZaEMvZuWxKK1GQyWkTuhkA3z0xQ5lQrQfy",
         validate=tpg_validate,
         run=tpg_run,
+    ),
     "duu": AlgorithmMeta(
         id="duu",
         name="Теория Игр — Игры с природой",
