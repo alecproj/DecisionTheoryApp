@@ -7,6 +7,9 @@ from app.algorithms.analytic_hierarchy_process.algo import run as ahp_run
 from app.algorithms.successive_substitutions_method.schema import validator as csm_validate
 from app.algorithms.successive_substitutions_method.algo import run as csm_run
 
+from app.algorithms.two_player_games.parser import validate_input as tpg_validate
+from app.algorithms.two_player_games.algo import run as tpg_run
+
 from app.algorithms.decision_under_uncertainty.parser import validate_input as duu_validate
 from app.algorithms.decision_under_uncertainty.algo import run as duu_run
 
@@ -53,6 +56,22 @@ ALGORITHMS: dict[str, AlgorithmMeta] = {
         validate=csm_validate,
         run=csm_run,
     ),
+    "tpg": AlgorithmMeta(
+        id="tpg",
+        name="Теория игр — Парные игры",
+        description=(
+            "Парные игры в нормальной форме используются для анализа стратегического взаимодействия двух игроков, "
+            "когда результат зависит от выбора стратегий обеих сторон. "
+            "Каждому сочетанию стратегий соответствует пара выигрышей: для первого и второго игрока. "
+            "Для поиска устойчивых решений используется равновесие Нэша, которое показывает такие стратегии, "
+            "при которых ни одному игроку невыгодно односторонне менять своё решение. "
+            "Результатом является найденное равновесие или набор равновесий с указанием, являются ли стратегии чистыми или смешанными."
+        ),
+        guide_link="https://e.pcloud.link/publink/show?code=kZhOMvZw2PnpTD0TpQYgxQQ7rc2rYrRj097",
+        template_link=" https://e.pcloud.link/publink/show?code=kZaEMvZuWxKK1GQyWkTuhkA3z0xQ5lQrQfy",
+        validate=tpg_validate,
+        run=tpg_run,
+    ),
     "duu": AlgorithmMeta(
         id="duu",
         name="Теория Игр — Игры с природой",
@@ -89,4 +108,3 @@ def get_algorithm(algorithm_id: str) -> AlgorithmMeta:
     if algorithm_id not in ALGORITHMS:
         raise KeyError(f"Unknown algorithm_id: {algorithm_id}")
     return ALGORITHMS[algorithm_id]
-
