@@ -38,6 +38,9 @@ def validate_input(file_content: str) -> FuzzyRelationsInput:
     оставляет schema.py публичным контрактом алгоритма, а parser.py —
     внутренним инфраструктурным модулем.
     """
-    from .parser import parse_fuzzy_relations_input
+    try:
+        from .parser import parse_fuzzy_relations_input
+    except ImportError:
+        from parser import parse_fuzzy_relations_input
 
     return parse_fuzzy_relations_input(file_content)

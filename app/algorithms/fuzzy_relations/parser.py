@@ -5,7 +5,10 @@ import math
 from io import StringIO
 from typing import List
 
-from .schema import FuzzyRelationsInput
+try:
+    from .schema import FuzzyRelationsInput
+except ImportError:
+    from schema import FuzzyRelationsInput
 
 
 SIGNATURE = "FREL"
@@ -321,20 +324,23 @@ def _parse_name(
     index: int,
 ) -> str:
     """
-    Читает название одного элемента множества.
+    Читает название активного элемента множества.
 
-    Если пользовательское название пустое, используется технический код
-    элемента из соседнего столбца: Y1, X1 или Z1. Это позволяет работать
-    даже с минимально заполненным шаблоном.
+    Код элемента Y1/X1/Z1 используется только как служебная подпись шаблона.
+    Для активных элементов пользовательское название обязательно, потому что
+    оно попадает в отчет и используется для интерпретации результата.
     """
     name = _get_cell(rows, row_idx, name_col)
     code = _get_cell(rows, row_idx, code_col)
 
-    result = name if name else code
-    if result == "":
-        raise ValueError(f"Не заполнено название элемента {label}{index}")
+    if _is_blank(name):
+        element_code = code if not _is_blank(code) else f"{label}{index}"
+        raise ValueError(
+            f"Не заполнено название элемента {element_code} "
+            f"в списке {label}"
+        )
 
-    return result
+    return name
 
 
 def _validate_unique_names(names: list[str], label: str) -> None:
