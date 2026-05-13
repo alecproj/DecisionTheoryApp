@@ -176,3 +176,236 @@ a:hover {
   color: #ffffff;
   text-decoration: underline;
 }
+
+/* ===============================
+   Улучшенная область отчёта
+================================ */
+
+.report-card {
+    max-width: min(1200px, calc(100vw - 40px));
+}
+
+.report-body {
+    width: 100%;
+}
+
+.report-card h3 {
+    margin-top: 20px;
+    margin-bottom: 8px;
+    color: var(--text);
+}
+
+.report-card code {
+    padding: 2px 5px;
+    border-radius: 5px;
+    background: rgba(2, 6, 23, 0.55);
+    color: #e2e8f0;
+    font-size: 0.92em;
+}
+
+.code-block {
+    overflow-x: auto;
+    margin: 14px 0;
+    padding: 14px;
+    border: 1px solid rgba(148, 163, 184, 0.22);
+    border-radius: 10px;
+    background: rgba(2, 6, 23, 0.7);
+}
+
+.code-block code {
+    padding: 0;
+    background: transparent;
+    color: #e2e8f0;
+    white-space: pre;
+}
+
+.report-card th,
+.report-card td {
+    padding: 10px;
+    border: 1px solid var(--border);
+    text-align: center;
+}
+
+.report-card th {
+    background: rgba(39, 205, 227, 0.15);
+    color: var(--text);
+    font-weight: 700;
+}
+
+.report-card tr:first-child td {
+    background: transparent;
+    font-weight: 400;
+}
+
+/* ===============================
+   Mermaid-схема дерева
+================================ */
+
+.mermaid-block {
+    margin: 22px 0;
+    padding: 16px;
+    border: 1px solid rgba(148, 163, 184, 0.28);
+    border-radius: 16px;
+    background: rgba(15, 23, 42, 0.42);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.22);
+}
+
+.mermaid-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+
+.mermaid-toolbar-left,
+.mermaid-toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.mermaid-btn {
+    min-height: 34px;
+    padding: 7px 12px;
+    border: 1px solid rgba(39, 205, 227, 0.42);
+    border-radius: 10px;
+    background: rgba(2, 6, 23, 0.72);
+    color: #e5faff;
+    font-size: 13px;
+    line-height: 1;
+    cursor: pointer;
+    transition:
+        background 0.15s ease,
+        border-color 0.15s ease,
+        transform 0.05s ease;
+}
+
+.mermaid-btn:hover {
+    background: rgba(39, 205, 227, 0.14);
+    border-color: rgba(39, 205, 227, 0.8);
+}
+
+.mermaid-btn:active {
+    transform: translateY(1px);
+}
+
+.mermaid-zoom-reset {
+    min-width: 64px;
+}
+
+.mermaid-status {
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.mermaid-help {
+    margin-bottom: 10px;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.mermaid-preview {
+    position: relative;
+    min-height: 520px;
+    max-height: 760px;
+    overflow: hidden;
+    border: 1px solid rgba(148, 163, 184, 0.24);
+    border-radius: 14px;
+    background:
+        radial-gradient(circle at top left, rgba(39, 205, 227, 0.09), transparent 34%),
+        rgba(2, 6, 23, 0.62);
+    cursor: grab;
+    user-select: none;
+}
+
+.mermaid-preview.is-dragging {
+    cursor: grabbing;
+}
+
+.mermaid-canvas {
+    display: inline-block;
+    min-width: max-content;
+    padding: 34px;
+    will-change: transform;
+}
+
+.mermaid-canvas svg {
+    display: block;
+    max-width: none !important;
+    height: auto;
+}
+
+.mermaid-canvas svg text {
+    font-family: "Segoe UI", Roboto, Arial, sans-serif !important;
+}
+
+.mermaid-placeholder,
+.mermaid-error {
+    padding: 22px;
+    color: #cbd5e1;
+}
+
+.mermaid-error {
+    border: 1px solid rgba(248, 113, 113, 0.45);
+    border-radius: 12px;
+    background: rgba(127, 29, 29, 0.2);
+    color: #fecaca;
+}
+
+.mermaid-source-details {
+    margin-top: 12px;
+    color: #cbd5e1;
+}
+
+.mermaid-source-details summary {
+    cursor: pointer;
+    color: #67e8f9;
+}
+
+.mermaid-source-details summary:hover {
+    color: #ffffff;
+}
+
+.mermaid-source-details pre {
+    max-height: 360px;
+    overflow: auto;
+    margin-top: 10px;
+    padding: 14px;
+    border: 1px solid rgba(148, 163, 184, 0.22);
+    border-radius: 12px;
+    background: rgba(2, 6, 23, 0.78);
+}
+
+.mermaid-source-details code {
+    padding: 0;
+    background: transparent;
+    color: #e2e8f0;
+    white-space: pre;
+}
+
+/* ===============================
+   Адаптив
+================================ */
+
+@media (max-width: 768px) {
+    body {
+        padding: 30px 12px;
+    }
+
+    .report-card {
+        padding: 22px;
+        max-width: 100%;
+    }
+
+    .mermaid-preview {
+        min-height: 420px;
+        max-height: 620px;
+    }
+
+    .mermaid-toolbar {
+        align-items: flex-start;
+    }
+}
