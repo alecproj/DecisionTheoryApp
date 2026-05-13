@@ -410,7 +410,18 @@ def _mermaid_split_label(node: Node) -> str:
 
 
 def _render_mermaid_tree(root: Node) -> str:
-    lines: list[str] = ["flowchart TD"]
+    lines: list[str] = [
+        "flowchart TD",
+
+        # Общая стилизация графа под тёмный интерфейс
+        "    classDef split fill:#0f2a44,stroke:#38bdf8,stroke-width:1.6px,color:#e0f2fe;",
+        "    classDef leaf fill:#123524,stroke:#34d399,stroke-width:1.6px,color:#dcfce7;",
+        "    classDef default font-size:13px,font-family:Arial;",
+
+        # Стилизация линий
+        "    linkStyle default stroke:#94a3b8,stroke-width:1.5px;",
+    ]
+
     counter = 0
 
     def next_id() -> str:
@@ -423,11 +434,11 @@ def _render_mermaid_tree(root: Node) -> str:
 
         if node.feature_index is None:
             label = _mermaid_leaf_label(node)
-            lines.append(f'    {node_id}["{label}"]')
+            lines.append(f'    {node_id}["{label}"]:::leaf')
             return node_id
 
         label = _mermaid_split_label(node)
-        lines.append(f'    {node_id}{{"{label}"}}')
+        lines.append(f'    {node_id}["{label}"]:::split')
 
         if node.left is not None:
             left_id = walk(node.left)
