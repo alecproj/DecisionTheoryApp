@@ -102,8 +102,8 @@ ALGORITHMS: dict[str, AlgorithmMeta] = {
             "и строит предсказания для строк 'Предсказание'. "
             "Для выбора разбиений используется критерий Джини."
         ),
-        guide_link="",
-        template_link="",
+        guide_link="https://e.pcloud.link/publink/show?code=kZukriZXLvVjIWn6TXJ4BjeaK9cwBB5BTmk",
+        template_link="https://e.pcloud.link/publink/show?code=kZBkriZV0rMPoaWuWQlcrlPUWD8Vj7eGEJX",
         validate=cart_validate,
         run=cart_run,
     ),
