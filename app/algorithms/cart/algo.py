@@ -368,6 +368,82 @@ def _render_tree(node: Node, indent: str = "") -> list[str]:
     return lines
 
 
+def _escape_mermaid_text(value: Any) -> str:
+    text = str(value)
+
+    replacements = {
+        "\\": "\\\\",
+        '"': "'",
+        "\n": " ",
+        "\r": " ",
+        "<": "&lt;",
+        ">": "&gt;",
+        "{": "(",
+        "}": ")",
+        "[": "(",
+        "]": ")",
+        "|": "/",
+    }
+
+    for old, new in replacements.items():
+        text = text.replace(old, new)
+
+    return text
+
+
+def _mermaid_leaf_label(node: Node) -> str:
+    return (
+        f"Класс: {_escape_mermaid_text(node.prediction)}"
+        f"<br/>объектов: {node.samples}"
+        f"<br/>индекс Джини: {_format_number(node.gini)}"
+        f"<br/>классы: {_escape_mermaid_text(_class_counts_text(node.class_counts))}"
+    )
+
+
+def _mermaid_split_label(node: Node) -> str:
+    return (
+        f"{_escape_mermaid_text(_condition_text(node))}"
+        f"<br/>объектов: {node.samples}"
+        f"<br/>индекс Джини: {_format_number(node.gini)}"
+        f"<br/>улучшение: {_format_number(node.gain)}"
+    )
+
+
+def _render_mermaid_tree(root: Node) -> str:
+    lines: list[str] = ["flowchart TD"]
+    counter = 0
+
+    def next_id() -> str:
+        nonlocal counter
+        counter += 1
+        return f"N{counter}"
+
+    def walk(node: Node) -> str:
+        node_id = next_id()
+
+        if node.feature_index is None:
+            label = _mermaid_leaf_label(node)
+            lines.append(f'    {node_id}["{label}"]')
+            return node_id
+
+        label = _mermaid_split_label(node)
+        lines.append(f'    {node_id}{{"{label}"}}')
+
+        if node.left is not None:
+            left_id = walk(node.left)
+            lines.append(f'    {node_id} -- "Да" --> {left_id}')
+
+        if node.right is not None:
+            right_id = walk(node.right)
+            lines.append(f'    {node_id} -- "Нет" --> {right_id}')
+
+        return node_id
+
+    walk(root)
+
+    return "\n".join(lines)
+
+
 def _prediction_rows(
     X: Sequence[Sequence[Any]],
     feature_names: Sequence[str],
@@ -457,6 +533,18 @@ def run(input_data: CARTInput, reporter: MarkdownReporter) -> None:
 
     for line in _render_tree(tree):
         reporter.text(f"`{line}`")
+
+    reporter.h2("Визуальная схема дерева")
+    reporter.text(
+        "Ниже приведён код схемы дерева. "
+        "Его можно скопировать в редактор с поддержкой Mermaid, например Mermaid Live Editor, "
+        "и увидеть дерево в виде блок-схемы."
+    )
+    reporter.text(
+        "```mermaid\n"
+        + _render_mermaid_tree(tree)
+        + "\n```"
+    )
 
     reporter.h2("Оценка качества")
     reporter.text(
