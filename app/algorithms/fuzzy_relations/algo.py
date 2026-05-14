@@ -301,11 +301,18 @@ def run(input_data: FuzzyRelationsInput, reporter: MarkdownReporter) -> None:
         "Исходное отношение R1 имеет размер Y x X, отношение R2 имеет размер Y x Z, "
         "а результат имеет размер X x Z."
     )
-    reporter.text(
-        "Размерность исходных данных:\n\n"
-        f"|Y| = {len(y_names)}\n"
-        f"|X| = {len(x_names)}\n"
-        f"|Z| = {len(z_names)}."
+
+    _add_relation_table(
+        reporter=reporter,
+        title="Размерность исходных данных",
+        row_header="Объект",
+        row_names=["|Y|", "|X|", "|Z|"],
+        col_names=["Количество"],
+        matrix=[
+            [len(y_names)],
+            [len(x_names)],
+            [len(z_names)],
+        ],
     )
 
     _add_named_list_table(reporter, "Множество Y", "Y", y_names)
