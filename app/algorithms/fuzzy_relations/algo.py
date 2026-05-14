@@ -303,9 +303,9 @@ def run(input_data: FuzzyRelationsInput, reporter: MarkdownReporter) -> None:
     )
     reporter.text(
         "Размерность исходных данных:\n\n"
-        f"- |Y| = {len(y_names)}\n"
-        f"- |X| = {len(x_names)}\n"
-        f"- |Z| = {len(z_names)}."
+        f"|Y| = {len(y_names)}\n"
+        f"|X| = {len(x_names)}\n"
+        f"|Z| = {len(z_names)}."
     )
 
     _add_named_list_table(reporter, "Множество Y", "Y", y_names)
