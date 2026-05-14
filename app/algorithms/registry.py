@@ -16,6 +16,9 @@ from app.algorithms.decision_under_uncertainty.algo import run as duu_run
 from app.algorithms.cart.parser import validate_input as cart_validate
 from app.algorithms.cart.algo import run as cart_run
 
+from app.algorithms.fuzzy_relations.schema import validate_input as frl_validate
+from app.algorithms.fuzzy_relations.algo import run as frl_run
+
 
 @dataclass(frozen=True)
 class AlgorithmMeta:
@@ -106,6 +109,21 @@ ALGORITHMS: dict[str, AlgorithmMeta] = {
         template_link="https://e.pcloud.link/publink/show?code=kZBkriZV0rMPoaWuWQlcrlPUWD8Vj7eGEJX",
         validate=cart_validate,
         run=cart_run,
+    ),
+    "frl": AlgorithmMeta(
+        id="frl",
+        name="Композиция нечетких отношений",
+        description=(
+            "Композиция нечетких отношений используется для построения связи между множествами X и Z "
+            "через общее промежуточное множество Y. На вход подаются два нечетких отношения: R1(Y, X) "
+            "и R2(Y, Z), значения которых находятся в диапазоне от 0 до 1. Алгоритм рассчитывает "
+            "результирующее отношение R(X, Z) методами max-min и max-prod. Результатом является матрица "
+            "соответствия элементов X элементам Z и список лучших соответствий по каждому методу."
+        ),
+        guide_link="https://e.pcloud.link/publink/show?code=kZmuoiZ6F9ytDHR54hAHJOzj3Ge4XIOvscX",
+        template_link="https://e.pcloud.link/publink/show?code=kZ1uoiZYg9svV1Yzwkycj6g66EF2STo2OCy",
+        validate=frl_validate,
+        run=frl_run,
     ),
 }
 
