@@ -306,7 +306,7 @@ def run(input_data: FuzzyRelationsInput, reporter: MarkdownReporter) -> None:
         reporter=reporter,
         title="Размерность исходных данных",
         row_header="Объект",
-        row_names=["|Y|", "|X|", "|Z|"],
+        row_names=["Y", "X", "Z"],
         col_names=["Количество"],
         matrix=[
             [len(y_names)],
