@@ -13,6 +13,9 @@ from app.algorithms.two_player_games.algo import run as tpg_run
 from app.algorithms.decision_under_uncertainty.parser import validate_input as duu_validate
 from app.algorithms.decision_under_uncertainty.algo import run as duu_run
 
+from app.algorithms.cart.parser import validate_input as cart_validate
+from app.algorithms.cart.algo import run as cart_run
+
 
 @dataclass(frozen=True)
 class AlgorithmMeta:
@@ -87,6 +90,22 @@ ALGORITHMS: dict[str, AlgorithmMeta] = {
         template_link="https://e.pcloud.link/publink/show?code=kZKOMvZ9g8QpYmj0iRE0u4eYUiDc86jQB97",
         validate=duu_validate,
         run=duu_run,
+    ),
+    "cart": AlgorithmMeta(
+        id="cart",
+        name="CART — дерево решений",
+        description=(
+            "CART — алгоритм построения бинарного дерева решений для задачи классификации. "
+            "На вход подаётся таблица с признаками, целевой переменной и колонкой 'Режим', "
+            "которая разделяет строки на Тренировка, Проверка и Предсказание. "
+            "Алгоритм обучается на строках 'Тренировка', проверяется на строках 'Проверка' "
+            "и строит предсказания для строк 'Предсказание'. "
+            "Для выбора разбиений используется критерий Джини."
+        ),
+        guide_link="https://e.pcloud.link/publink/show?code=kZukriZXLvVjIWn6TXJ4BjeaK9cwBB5BTmk",
+        template_link="https://e.pcloud.link/publink/show?code=kZBkriZV0rMPoaWuWQlcrlPUWD8Vj7eGEJX",
+        validate=cart_validate,
+        run=cart_run,
     ),
 }
 
